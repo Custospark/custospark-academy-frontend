@@ -2,8 +2,10 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { PublicRoute } from './PublicRoute'
 import { AuthMiddlewareRoute } from './middleware/AuthMiddlewareRoute'
+import { RoleAccessMiddleware } from './middleware/RoleAccessMiddleware'
 import { ROUTES } from './constants/shared.paths'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
+import { AppLayout } from '../../shared/components/layout/AppLayout'
 
 const LandingLayout = lazy(() => import('../../modules/landing/LandingLayout'))
 const LandingPage = lazy(() => import('../../modules/landing/LandingPage'))
@@ -14,7 +16,15 @@ const LoginPage = lazy(() => import('../../modules/auth/LoginPage'))
 const RegisterPage = lazy(() => import('../../modules/auth/RegisterPage'))
 const ForgotPasswordPage = lazy(() => import('../../modules/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('../../modules/auth/ResetPasswordPage'))
+
 const DashboardPage = lazy(() => import('../../modules/dashboard/DashboardPage'))
+const CatalogPage = lazy(() => import('../../modules/catalog/CatalogPage'))
+const MyCoursesPage = lazy(() => import('../../modules/myCourses/MyCoursesPage'))
+const SchedulesPage = lazy(() => import('../../modules/schedules/SchedulesPage'))
+const PaymentsPage = lazy(() => import('../../modules/payments/PaymentsPage'))
+const CertificatesPage = lazy(() => import('../../modules/certificates/CertificatesPage'))
+const AdminCoursesPage = lazy(() => import('../../modules/admin/courses/AdminCoursesPage'))
+const AdminEnrollmentsPage = lazy(() => import('../../modules/admin/enrollments/AdminEnrollmentsPage'))
 
 function withSuspense(node: React.ReactNode) {
   return <Suspense fallback={<AcademyLoader fullPage />}>{node}</Suspense>
@@ -37,9 +47,30 @@ export function AppRoutes() {
         <Route path={ROUTES.RESET_PASSWORD} element={withSuspense(<ResetPasswordPage />)} />
       </Route>
 
-      {/* Authenticated app routes */}
+      {/* Authenticated app routes - protected shell */}
       <Route element={<AuthMiddlewareRoute />}>
-        <Route path={ROUTES.DASHBOARD} element={withSuspense(<DashboardPage />)} />
+        <Route element={withSuspense(<AppLayout />)}>
+          <Route path={ROUTES.DASHBOARD} element={withSuspense(<DashboardPage />)} />
+          <Route path={ROUTES.APP.CATALOG} element={withSuspense(<CatalogPage />)} />
+          <Route path={ROUTES.APP.MY_COURSES} element={withSuspense(<MyCoursesPage />)} />
+          <Route path={ROUTES.APP.SCHEDULES} element={withSuspense(<SchedulesPage />)} />
+          <Route path={ROUTES.APP.PAYMENTS} element={withSuspense(<PaymentsPage />)} />
+          <Route path={ROUTES.APP.CERTIFICATES} element={withSuspense(<CertificatesPage />)} />
+        </Route>
+
+        {/* Instructor/admin: course management */}
+        <Route element={<RoleAccessMiddleware module="courseManagement" />}>
+          <Route element={withSuspense(<AppLayout />)}>
+            <Route path={ROUTES.APP.ADMIN.COURSES} element={withSuspense(<AdminCoursesPage />)} />
+          </Route>
+        </Route>
+
+        {/* Admin only: enrollment management */}
+        <Route element={<RoleAccessMiddleware module="enrollmentManagement" />}>
+          <Route element={withSuspense(<AppLayout />)}>
+            <Route path={ROUTES.APP.ADMIN.ENROLLMENTS} element={withSuspense(<AdminEnrollmentsPage />)} />
+          </Route>
+        </Route>
       </Route>
     </Routes>
   )

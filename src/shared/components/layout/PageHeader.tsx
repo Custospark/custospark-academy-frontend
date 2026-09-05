@@ -1,0 +1,22 @@
+import type { ReactNode } from 'react'
+
+interface PageHeaderProps {
+  title: string
+  description?: string
+  actions?: ReactNode
+}
+
+/**
+ * Standard app page header (title, optional description and action area).
+ */
+export function PageHeader({ title, description, actions }: PageHeaderProps) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 className="font-display text-2xl font-bold text-white">{title}</h1>
+        {description && <p className="mt-1 text-sm text-text-secondary">{description}</p>}
+      </div>
+      {actions && <div className="flex shrink-0 items-center gap-3">{actions}</div>}
+    </div>
+  )
+}
