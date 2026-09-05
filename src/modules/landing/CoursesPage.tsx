@@ -18,7 +18,8 @@ const CATEGORY_DOT: Record<string, string> = {
 
 function formatFee(course: Course): string {
   const tuition = course.fees.find((f) => f.fee_type === 'tuition')
-  if (!tuition) return 'View course'
+  if (!tuition) return 'Waived'
+  if (tuition.amount <= 0) return 'Sponsored'
   return new Intl.NumberFormat('en-UG').format(Math.round(tuition.amount)) + ' UGX'
 }
 

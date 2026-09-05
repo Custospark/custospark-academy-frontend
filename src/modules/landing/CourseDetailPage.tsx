@@ -36,6 +36,23 @@ function formatMoney(amount: number): string {
   return new Intl.NumberFormat('en-UG').format(Math.round(amount)) + ' UGX'
 }
 
+/**
+ * Zero-fee handling: we avoid "Free" (users read it as low value). Tuition is
+ * "Sponsored" when zero; other fees (application/certificate) are "Waived".
+ */
+function feeAmountLabel(fee: CourseFee): string {
+  if (fee.amount > 0) return formatMoney(fee.amount)
+  return fee.fee_type === 'tuition' ? 'Sponsored' : 'Waived'
+}
+
+function feeTotal(fees: CourseFee[]): number {
+  return fees.reduce((sum, fee) => sum + fee.amount, 0)
+}
+
+function isSponsored(fees: CourseFee[]): boolean {
+  return fees.every((fee) => fee.amount <= 0)
+}
+
 function formatDate(date: string | null): string | null {
   if (!date) return null
   return new Date(date).toLocaleDateString('en-UG', {
@@ -43,10 +60,6 @@ function formatDate(date: string | null): string | null {
     month: 'long',
     year: 'numeric',
   })
-}
-
-function feeTotal(fees: CourseFee[]): number {
-  return fees.reduce((sum, fee) => sum + fee.amount, 0)
 }
 
 export default function CourseDetailPage() {
@@ -91,15 +104,28 @@ export default function CourseDetailPage() {
     <div className="bg-surface-page">
       {/* Breadcrumb */}
       <div className="border-b border-border-subtle bg-surface-section">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+            <Link to={ROUTES.HOME} className="font-medium text-text-secondary transition-colors hover:text-white">
+              Home
+            </Link>
+            <span className="text-text-muted">/</span>
+            <Link
+              to={ROUTES.COURSES}
+              className="font-medium text-text-secondary transition-colors hover:text-white"
+            >
+              Courses
+            </Link>
+            <span className="text-text-muted">/</span>
+            <span className="truncate font-semibold text-white">{course.title}</span>
+          </nav>
           <Link
             to={ROUTES.COURSES}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-white"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border-default px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:border-border-strong hover:bg-surface-card hover:text-white"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             All courses
           </Link>
-          <span className="text-xs text-text-muted">{course.category}</span>
         </div>
       </div>
 
@@ -163,15 +189,26 @@ export default function CourseDetailPage() {
                         <div className="text-xs text-text-muted">{fee.currency}</div>
                       </div>
                     </div>
-                    <div className="font-display text-lg font-bold text-blue-400">
-                      {formatMoney(fee.amount)}
+                    <div
+                      className={`font-display text-lg font-bold ${
+                        fee.amount <= 0 ? 'text-academy-teal' : 'text-blue-400'
+                      }`}
+                    >
+                      {feeAmountLabel(fee)}
                     </div>
                   </div>
                 ))}
-                <div className="flex items-center justify-between rounded-xl border border-border-strong bg-surface-card-hover px-5 py-4">
-                  <div className="font-medium text-white">Total investment</div>
-                  <div className="font-display text-xl font-bold text-blue-300">{formatMoney(total)}</div>
-                </div>
+                {isSponsored(course.fees) ? (
+                  <div className="flex items-center justify-between rounded-xl border border-border-strong bg-surface-card-hover px-5 py-4">
+                    <div className="font-medium text-white">Investment</div>
+                    <div className="font-display text-xl font-bold text-academy-teal">Sponsored</div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between rounded-xl border border-border-strong bg-surface-card-hover px-5 py-4">
+                    <div className="font-medium text-white">Total investment</div>
+                    <div className="font-display text-xl font-bold text-blue-300">{formatMoney(total)}</div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -225,10 +262,10 @@ export default function CourseDetailPage() {
           <aside className="h-fit rounded-2xl border border-border-subtle bg-surface-card p-6 lg:sticky lg:top-24">
             <div className="text-xs text-text-muted">Tuition</div>
             <div className="font-display text-3xl font-bold text-white">
-              {tuition ? formatMoney(tuition.amount) : 'Free'}
+              {tuition ? (tuition.amount <= 0 ? 'Sponsored' : formatMoney(tuition.amount)) : 'Waived'}
             </div>
             <div className="mt-1 text-xs text-text-muted">
-              Total: {formatMoney(total)}
+              {isSponsored(course.fees) ? 'All fees sponsored for this cohort' : `Total: ${formatMoney(total)}`}
             </div>
 
             <div className="mt-5 space-y-3 border-t border-border-subtle pt-5">
