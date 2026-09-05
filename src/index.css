@@ -125,3 +125,63 @@
     display: none;
   }
 }
+
+/* ============================================================
+   Academy Loader animations - "orbiting cap"
+   ============================================================ */
+
+@keyframes academy-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes academy-orbit-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes academy-orbit-fade {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes academy-spark-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.7;
+  }
+}
+
+.animate-academy-orbit {
+  animation: academy-orbit 2.4s linear infinite;
+}
+
+.animate-academy-orbit-reverse {
+  animation: academy-orbit-reverse 3s linear infinite;
+}
+
+.animate-academy-orbit-fade {
+  animation: academy-orbit-fade 2.4s ease-in-out infinite;
+}
+
+.animate-academy-spark {
+  animation: academy-spark-pulse 1.6s ease-in-out infinite;
+}
