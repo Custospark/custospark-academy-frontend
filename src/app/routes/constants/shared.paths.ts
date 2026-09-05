@@ -25,6 +25,9 @@ export const ROUTES = {
       COURSES: '/app/admin/courses',
       COURSE: (id: number | string) => `/app/admin/courses/${id}`,
       ENROLLMENTS: '/app/admin/enrollments',
+      INSTRUCTORS: '/app/admin/instructors',
+      STATS: '/app/admin/stats',
+      PERMISSIONS: '/app/admin/permissions',
     },
   },
 } as const

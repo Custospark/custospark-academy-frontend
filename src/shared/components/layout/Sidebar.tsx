@@ -34,6 +34,9 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
     [ROUTES.APP.CERTIFICATES]: 'certificates',
     [ROUTES.APP.ADMIN.COURSES]: 'courseManagement',
     [ROUTES.APP.ADMIN.ENROLLMENTS]: 'enrollmentManagement',
+    [ROUTES.APP.ADMIN.INSTRUCTORS]: 'instructorManagement',
+    [ROUTES.APP.ADMIN.STATS]: 'platformStats',
+    [ROUTES.APP.ADMIN.PERMISSIONS]: 'userPermissions',
   }
 
   const groups = sidebarNavGroups.map((group) => ({

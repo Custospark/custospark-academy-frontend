@@ -19,6 +19,9 @@ export type AcademyModule =
   | 'certificates'
   | 'courseManagement'
   | 'enrollmentManagement'
+  | 'instructorManagement'
+  | 'platformStats'
+  | 'userPermissions'
 
 export const MODULE_DEFAULT_ROUTES: Record<AcademyModule, string> = {
   dashboard: ROUTES.DASHBOARD,
@@ -29,6 +32,9 @@ export const MODULE_DEFAULT_ROUTES: Record<AcademyModule, string> = {
   certificates: ROUTES.APP.CERTIFICATES,
   courseManagement: ROUTES.APP.ADMIN.COURSES,
   enrollmentManagement: ROUTES.APP.ADMIN.ENROLLMENTS,
+  instructorManagement: ROUTES.APP.ADMIN.INSTRUCTORS,
+  platformStats: ROUTES.APP.ADMIN.STATS,
+  userPermissions: ROUTES.APP.ADMIN.PERMISSIONS,
 }
 
 export const MODULE_LABELS: Record<AcademyModule, string> = {
@@ -40,6 +46,9 @@ export const MODULE_LABELS: Record<AcademyModule, string> = {
   certificates: 'Certificates',
   courseManagement: 'Course Management',
   enrollmentManagement: 'Enrollments',
+  instructorManagement: 'Instructors',
+  platformStats: 'Platform Stats',
+  userPermissions: 'Permissions',
 }
 
 /** Modules a given role can access. */
@@ -70,6 +79,9 @@ const ROLE_MODULES: Record<UserRole, AcademyModule[]> = {
     'certificates',
     'courseManagement',
     'enrollmentManagement',
+    'instructorManagement',
+    'platformStats',
+    'userPermissions',
   ],
 }
 
@@ -84,6 +96,7 @@ export type AcademyAction =
   | 'manage.enrollments'
   | 'admit.enrollments'
   | 'reject.enrollments'
+  | 'manage.instructors'
   | 'upgrade.account'
 
 const ROLE_ACTIONS: Record<UserRole, AcademyAction[]> = {
@@ -106,6 +119,7 @@ const ROLE_ACTIONS: Record<UserRole, AcademyAction[]> = {
     'manage.enrollments',
     'admit.enrollments',
     'reject.enrollments',
+    'manage.instructors',
     'upgrade.account',
   ],
 }

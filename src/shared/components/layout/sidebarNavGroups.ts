@@ -1,12 +1,15 @@
 import type { ElementType } from 'react'
 import {
   Award,
+  BarChart3,
   BookOpen,
   CalendarDays,
   GraduationCap,
+  KeyRound,
   LayoutDashboard,
   Library,
   ShieldCheck,
+  UserRoundCog,
   UserSquare2,
   Wallet,
 } from 'lucide-react'
@@ -58,6 +61,9 @@ export const sidebarNavGroups: SidebarNavGroup[] = [
     subItems: [
       { to: ROUTES.APP.ADMIN.COURSES, label: 'Course Management', icon: Library },
       { to: ROUTES.APP.ADMIN.ENROLLMENTS, label: 'Enrollments', icon: UserSquare2, adminOnly: true },
+      { to: ROUTES.APP.ADMIN.INSTRUCTORS, label: 'Instructors', icon: UserRoundCog, adminOnly: true },
+      { to: ROUTES.APP.ADMIN.STATS, label: 'Platform Stats', icon: BarChart3, adminOnly: true },
+      { to: ROUTES.APP.ADMIN.PERMISSIONS, label: 'Permissions', icon: KeyRound, adminOnly: true },
     ],
   },
 ]

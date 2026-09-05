@@ -30,6 +30,7 @@ export const ENDPOINTS = {
   },
   ADMIN: {
     COURSES: {
+      INDEX: '/admin/courses',
       STORE: '/admin/courses',
       UPDATE: (id: number) => `/admin/courses/${id}`,
       DESTROY: (id: number) => `/admin/courses/${id}`,
@@ -37,5 +38,16 @@ export const ENDPOINTS = {
     ENROLLMENTS: '/admin/enrollments',
     ADMIT: (id: number) => `/admin/enrollments/${id}/admit`,
     REJECT: (id: number) => `/admin/enrollments/${id}/reject`,
+    INSTRUCTORS: {
+      INDEX: '/admin/instructors',
+      STORE: '/admin/instructors',
+      UPDATE: (id: number) => `/admin/instructors/${id}`,
+      DESTROY: (id: number) => `/admin/instructors/${id}`,
+    },
+    STATS: '/admin/stats',
+    USERS: {
+      INDEX: '/admin/users',
+      UPDATE: (id: number) => `/admin/users/${id}`,
+    },
   },
 } as const

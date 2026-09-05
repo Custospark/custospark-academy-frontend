@@ -25,6 +25,9 @@ const PaymentsPage = lazy(() => import('../../modules/payments/PaymentsPage'))
 const CertificatesPage = lazy(() => import('../../modules/certificates/CertificatesPage'))
 const AdminCoursesPage = lazy(() => import('../../modules/admin/courses/AdminCoursesPage'))
 const AdminEnrollmentsPage = lazy(() => import('../../modules/admin/enrollments/AdminEnrollmentsPage'))
+const InstructorManagementPage = lazy(() => import('../../modules/admin/instructors/InstructorManagementPage'))
+const PlatformStatsPage = lazy(() => import('../../modules/admin/stats/PlatformStatsPage'))
+const PermissionsPage = lazy(() => import('../../modules/admin/permissions/PermissionsPage'))
 
 function withSuspense(node: React.ReactNode) {
   return <Suspense fallback={<AcademyLoader fullPage />}>{node}</Suspense>
@@ -58,19 +61,22 @@ export function AppRoutes() {
           <Route path={ROUTES.APP.CERTIFICATES} element={withSuspense(<CertificatesPage />)} />
         </Route>
 
-        {/* Instructor/admin: course management */}
-        <Route element={<RoleAccessMiddleware module="courseManagement" />}>
-          <Route element={withSuspense(<AppLayout />)}>
-            <Route path={ROUTES.APP.ADMIN.COURSES} element={withSuspense(<AdminCoursesPage />)} />
-          </Route>
+{/* Instructor/admin: course management */}
+      <Route element={<RoleAccessMiddleware module="courseManagement" />}>
+        <Route element={withSuspense(<AppLayout />)}>
+          <Route path={ROUTES.APP.ADMIN.COURSES} element={withSuspense(<AdminCoursesPage />)} />
         </Route>
+      </Route>
 
-        {/* Admin only: enrollment management */}
-        <Route element={<RoleAccessMiddleware module="enrollmentManagement" />}>
-          <Route element={withSuspense(<AppLayout />)}>
-            <Route path={ROUTES.APP.ADMIN.ENROLLMENTS} element={withSuspense(<AdminEnrollmentsPage />)} />
-          </Route>
+      {/* Admin only: enrollment, instructor, stats, permissions */}
+      <Route element={<RoleAccessMiddleware module="enrollmentManagement" />}>
+        <Route element={withSuspense(<AppLayout />)}>
+          <Route path={ROUTES.APP.ADMIN.ENROLLMENTS} element={withSuspense(<AdminEnrollmentsPage />)} />
+          <Route path={ROUTES.APP.ADMIN.INSTRUCTORS} element={withSuspense(<InstructorManagementPage />)} />
+          <Route path={ROUTES.APP.ADMIN.STATS} element={withSuspense(<PlatformStatsPage />)} />
+          <Route path={ROUTES.APP.ADMIN.PERMISSIONS} element={withSuspense(<PermissionsPage />)} />
         </Route>
+      </Route>
       </Route>
     </Routes>
   )
