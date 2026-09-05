@@ -32,12 +32,12 @@ before any UI work. Key rules:
 
 | # | Rule |
 |---|------|
-| 1 | After changes run `npm run lint` (oxlint) and `npm run build` (tsc -b + vite). Report results. |
+| 1 | After changes run `npm run vera:fast` (oxlint + tsc + file-size/dash logic). Report results. |
 | 2 | Be conversational; explain before/after. |
 | 3 | Never assume. Unclear? Stop and ask. |
 | 4 | Check existing files first. Update > Create. |
 | 5 | Follow the design system in `../docs/design-system.md` - tokens only, never raw hex. |
-| 6 | **Go/No-Go gate before commit**: `npm run lint` + `npm run build` must pass. If they fail, do NOT commit. |
+| 6 | **Go/No-Go gate before commit**: `npm run vera:fast` must pass. If it fails, do NOT commit. |
 | 7 | Architect (Blue) for changes touching 3+ files or crossing FE+BE. Else Planning -> Code directly. |
 | 8 | **Quill always documents** - every feature into `docs/`. Documentation is mandatory. |
 | 9 | Stand-up before meaningful work (pages, routing, auth, payments, user-facing UI). |
@@ -57,6 +57,15 @@ before any UI work. Key rules:
 - **Styling**: use design tokens (CSS custom properties) defined from `docs/design-system.md`.
 - **API**: base URL from environment (`VITE_API_BASE_URL`), consume `api/v1`, handle
   errors consistently (validation 422, auth 401/403, not-found 404, domain 422).
+
+## Vera Performance Protocol
+
+- **Vera Fast** (default): `npm run vera:fast` - oxlint on changed files + `tsc --noEmit`
+  type-check + logic gates (file size <= 500 lines, no em/en dashes). Falls back to all of
+  `src/` when there are no commits yet.
+- **Vera Extended** (triggers): new pages/routes, new API integration, Oscar asks,
+  pre-merge. Runs full `npm run lint` + `npm run build`.
+- Never run the full build suite during agent work unless required.
 
 ## Summary Format
 
