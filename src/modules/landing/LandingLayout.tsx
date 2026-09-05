@@ -31,7 +31,7 @@ export default function LandingLayout() {
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-3 py-3 sm:px-6 sm:py-4" aria-label="Main navigation">
           <div className="flex items-center gap-3">
             <Link to={ROUTES.HOME}>
-              <LogoImage size="sm" />
+              <LogoImage size="sm" withWordmark={false} />
             </Link>
             <Link to={ROUTES.HOME} className="text-lg font-bold text-electric-blue">
               {PRODUCT_NAME}
@@ -123,7 +123,7 @@ export default function LandingLayout() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2.5">
-              <LogoImage size="sm" />
+              <LogoImage size="sm" withWordmark={false} />
               <span className="text-base font-bold text-electric-blue">{PRODUCT_NAME}</span>
             </div>
             <p className="text-center text-sm text-gray-500 md:text-right">

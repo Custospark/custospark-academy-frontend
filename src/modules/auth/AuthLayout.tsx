@@ -98,7 +98,7 @@ export default function AuthLayout({
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-gray-200 bg-white/95 px-5 py-4 backdrop-blur-sm sm:px-6">
           <Link to={ROUTES.HOME} className="inline-flex items-center gap-2.5">
-            <LogoImage size="md" />
+            <LogoImage size="md" withWordmark={false} />
             <span className="text-xl font-bold text-electric-blue">{PRODUCT_NAME}</span>
           </Link>
           <div className="ml-auto">

@@ -111,7 +111,7 @@ export default function LandingPage() {
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to={ROUTES.REGISTER} className="w-full sm:w-auto">
-                <Button size="lg" className="w-full">
+                <Button size="lg" className="w-full bg-academy-orange text-white hover:bg-bright-orange">
                   Start learning free
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -207,10 +207,11 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-electric-blue to-academy-orange opacity-10" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-academy-orange via-bright-orange to-electric-blue opacity-10" />
+        <div className="pointer-events-none absolute -right-32 top-0 h-72 w-72 rounded-full bg-academy-orange/20 blur-[100px]" />
         <div className="relative mx-auto max-w-4xl px-4 py-24 text-center sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl cta-gradient text-white shadow-lg shadow-electric-blue/30">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-academy-orange to-bright-orange text-white shadow-lg shadow-academy-orange/30">
               <GraduationCap className="h-8 w-8" />
             </div>
             <h2 className="font-display text-3xl font-bold text-gray-900 sm:text-4xl">
@@ -222,7 +223,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to={ROUTES.REGISTER} className="w-full sm:w-auto">
-                <Button size="lg" className="w-full">
+                <Button size="lg" className="w-full bg-academy-orange text-white hover:bg-bright-orange">
                   Create your account
                   <ArrowRight className="h-4 w-4" />
                 </Button>
