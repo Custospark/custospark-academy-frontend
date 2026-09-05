@@ -1,12 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, LogOut, Menu, UserRound } from 'lucide-react'
 import { useAppSelector } from '../../../app/store/hooks/useApp'
 import { useLogout } from '../../../shared/api/account/AccountQueries'
 import { cn } from '../../utils/cn'
+import { MODULE_LABELS, type AcademyModule } from '../../utils/roleAccess'
+import { ROUTES } from '../../../app/routes/constants/shared.paths'
 
 interface NavbarProps {
   onMenuClick: () => void
+}
+
+const PATH_TO_MODULE: Record<string, AcademyModule> = {
+  [ROUTES.DASHBOARD]: 'dashboard',
+  [ROUTES.APP.CATALOG]: 'catalog',
+  [ROUTES.APP.MY_COURSES]: 'myCourses',
+  [ROUTES.APP.SCHEDULES]: 'schedules',
+  [ROUTES.APP.PAYMENTS]: 'payments',
+  [ROUTES.APP.CERTIFICATES]: 'certificates',
+  [ROUTES.APP.ADMIN.COURSES]: 'courseManagement',
+  [ROUTES.APP.ADMIN.ENROLLMENTS]: 'enrollmentManagement',
 }
 
 /**
@@ -17,6 +30,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
   const user = useAppSelector((state) => state.auth.user)
   const logoutMutation = useLogout()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -50,7 +64,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
       <div className="min-w-0 flex-1">
         <h1 className="truncate font-display text-lg font-bold text-white">
-          {user?.name?.split(' ')[0] ? `Welcome back, ${user.name.split(' ')[0]}` : 'Dashboard'}
+          {MODULE_LABELS[PATH_TO_MODULE[location.pathname]] ?? 'Dashboard'}
         </h1>
       </div>
 
@@ -100,7 +114,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
                   setMenuOpen(false)
                   navigate('/app/catalog')
                 }}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-card hover:text-white"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-card hover:text-white"
               >
                 <UserRound className="h-4 w-4" />
                 Course Catalog

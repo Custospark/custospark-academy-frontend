@@ -98,6 +98,29 @@
     background-color: var(--color-blue-500);
     color: #ffffff;
   }
+
+  /* Interactive elements are pointer by default */
+  button,
+  [role='button'],
+  [role='menuitem'],
+  [role='option'],
+  select,
+  summary,
+  label[for],
+  a[href],
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='file'],
+  input[type='submit'],
+  input[type='range'] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button']:disabled,
+  a[aria-disabled='true'] {
+    cursor: not-allowed;
+  }
 }
 
 @layer utilities {
