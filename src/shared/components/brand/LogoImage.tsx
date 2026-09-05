@@ -23,17 +23,17 @@ export function LogoImage({ size = 'md', withWordmark = true, className }: LogoI
       <div
         className={cn(
           SIZES[size],
-          'flex items-center justify-center rounded-xl cta-gradient text-white shadow-lg shadow-electric-blue/20',
+          'flex items-center justify-center rounded-xl cta-gradient text-white shadow-md shadow-electric-blue/20',
         )}
       >
         <GraduationCap className={size === 'lg' ? 'h-8 w-8' : size === 'md' ? 'h-6 w-6' : 'h-5 w-5'} />
       </div>
       {withWordmark && (
         <div className="leading-tight">
-          <span className="block font-display text-lg font-bold tracking-tight text-white">
-            Custospark <span className="text-custospark-blue">Academy</span>
+          <span className="block font-display text-lg font-bold tracking-tight text-electric-blue">
+            Custospark <span className="text-academy-orange">Academy</span>
           </span>
-          <span className="block text-[11px] font-medium tracking-wide text-text-muted">
+          <span className="block text-[11px] font-medium tracking-wide text-gray-400">
             LEARN · BUILD · LAUNCH
           </span>
         </div>

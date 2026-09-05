@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Lock, LogIn, Mail, User, UserPlus } from 'lucide-react'
 import AuthLayout from './AuthLayout'
 import { AUTH_HERO_IMAGES } from './authHeroImages'
 import { Button } from '../../shared/components/buttons/Button'
-import { Input } from '../../shared/components/inputs/Input'
 import { useRegister } from '../../shared/api/account/AccountQueries'
 import { useAppSelector } from '../../app/store/hooks/useApp'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
@@ -15,20 +14,18 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const registerMutation = useRegister()
   const error = useAppSelector((state) => state.auth.error)
   const navigate = useNavigate()
 
   const passwordsMatch = password === confirmPassword
-  const formValid =
-    name.trim() !== '' &&
-    email.trim() !== '' &&
-    password.length >= 8 &&
-    passwordsMatch
+  const inputCls =
+    'w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-colors text-sm'
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!formValid || registerMutation.isPending) return
+    if (!passwordsMatch || registerMutation.isPending) return
 
     registerMutation.mutate(
       { name: name.trim(), email: email.trim(), phone: phone.trim() || undefined, password },
@@ -40,99 +37,105 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Start your learning journey"
-      subtitle="Join Custospark Academy - hands-on courses, live sessions and certificates that matter."
+      title="Create your account"
+      subtitle="Start learning in minutes - no credit card required."
       heroImage={AUTH_HERO_IMAGES.register}
     >
-      <div>
-        <h1 className="font-display text-2xl font-bold text-white">Create your account</h1>
-        <p className="mt-1.5 text-sm text-text-secondary">
-          It takes less than a minute to get started
-        </p>
-
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          {error && (
-            <div className="rounded-lg border border-academy-red/40 bg-academy-red/10 px-4 py-3 text-sm text-academy-red">
-              {error}
-            </div>
-          )}
-
-          <Input
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="relative">
+          <User className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
             type="text"
-            name="name"
-            label="Full name"
-            placeholder="Your full name"
-            autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            placeholder="Full name"
+            className={inputCls}
           />
+        </div>
 
-          <Input
+        <div className="relative">
+          <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
             type="email"
-            name="email"
-            label="Email address"
-            placeholder="you@example.com"
-            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            placeholder="Email address"
+            className={inputCls}
           />
+        </div>
 
-          <Input
+        <div className="relative">
+          <UserPlus className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
             type="tel"
-            name="phone"
-            label="Phone (optional)"
-            placeholder="+256 7XX XXX XXX"
-            autoComplete="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone (optional)"
+            className={inputCls}
           />
+        </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              type="password"
-              name="password"
-              label="Password"
-              placeholder="Min 8 characters"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              hint={password.length > 0 && password.length < 8 ? 'At least 8 characters' : undefined}
-              required
-            />
-            <Input
-              type="password"
-              name="confirm_password"
-              label="Confirm password"
-              placeholder="Repeat password"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              error={confirmPassword.length > 0 && !passwordsMatch ? 'Passwords do not match.' : undefined}
-              required
-            />
-          </div>
-
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full"
-            disabled={!formValid}
-            loading={registerMutation.isPending}
+        <div className="relative">
+          <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            placeholder="Password (min 8 characters)"
+            className={`${inputCls} pr-12`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((show) => !show)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
-            Create account
-            {!registerMutation.isPending && <ArrowRight className="h-4 w-4" />}
-          </Button>
-        </form>
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
 
-        <p className="mt-6 text-center text-sm text-text-secondary">
-          Already have an account?{' '}
-          <Link to={ROUTES.LOGIN} className="font-semibold text-custospark-blue hover:underline">
-            Sign in
+        <div className="relative">
+          <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            placeholder="Confirm password"
+            className={`${inputCls} pr-12`}
+          />
+        </div>
+
+        {confirmPassword.length > 0 && !passwordsMatch && (
+          <p className="text-sm text-red-600">Passwords do not match.</p>
+        )}
+
+        {error && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </p>
+        )}
+
+        <Button type="submit" className="w-full gap-2 py-3.5" loading={registerMutation.isPending}>
+          <UserPlus className="h-4 w-4" aria-hidden />
+          Create Account
+        </Button>
+
+        <div className="space-y-3 border-t border-gray-100 pt-5">
+          <p className="text-center text-sm font-medium text-gray-700">Already have an account?</p>
+          <Link
+            to={ROUTES.LOGIN}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-electric-blue bg-white px-4 py-3 text-sm font-semibold text-electric-blue transition-colors hover:bg-blue-50"
+          >
+            <LogIn className="h-4 w-4" aria-hidden />
+            Sign In
           </Link>
-        </p>
-      </div>
+        </div>
+      </form>
     </AuthLayout>
   )
 }
