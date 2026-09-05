@@ -42,7 +42,10 @@ export default function LandingLayout() {
             <div className="hidden items-center gap-1 md:flex">
               {NAV_LINKS.map((link) => {
                 const Icon = link.icon
-                const active = location.pathname === link.path
+                const active =
+                  link.path === ROUTES.HOME
+                    ? location.pathname === link.path
+                    : location.pathname === link.path || location.pathname.startsWith(`${link.path}/`)
                 return (
                   <Link
                     key={link.path}
@@ -123,16 +126,28 @@ export default function LandingLayout() {
 
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
                 <nav className="flex flex-col gap-1 p-5">
-                  {NAV_LINKS.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      onClick={() => setMobileOpen(false)}
-                      className="rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  {NAV_LINKS.map((link) => {
+                    const isActive =
+                      link.path === ROUTES.HOME
+                        ? location.pathname === link.path
+                        : location.pathname === link.path || location.pathname.startsWith(`${link.path}/`)
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        onClick={() => setMobileOpen(false)}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={
+                          isActive
+                            ? 'flex items-center gap-2.5 rounded-lg bg-blue-500/15 px-3 py-2.5 text-sm font-semibold text-blue-300'
+                            : 'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white'
+                        }
+                      >
+                        <link.icon className="h-4 w-4" />
+                        {link.label}
+                      </Link>
+                    )
+                  })}
                 </nav>
 
                 <div className="flex flex-col gap-3 p-5">
