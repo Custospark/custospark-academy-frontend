@@ -17,6 +17,9 @@ export const ENDPOINTS = {
     SHOW: (id: number) => `/courses/${id}`,
     SCHEDULES: (id: number) => `/courses/${id}/schedules`,
   },
+  SCHEDULES: {
+    STORE: (courseId: number) => `/admin/courses/${courseId}/schedules`,
+  },
   ENROLLMENTS: {
     APPLY: '/enrollments',
     MINE: '/enrollments/mine',

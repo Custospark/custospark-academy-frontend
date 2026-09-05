@@ -7,16 +7,19 @@ import { useCreateOutcome, useDeleteOutcome } from '../../../../shared/api/cours
 
 export function OutcomesTab({ course }: { course: CourseFull }) {
   const [description, setDescription] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const createMutation = useCreateOutcome(course.id)
   const deleteMutation = useDeleteOutcome(course.id)
 
   function handleAdd(e: FormEvent) {
     e.preventDefault()
+    setError(null)
     if (!description.trim() || createMutation.isPending) return
     createMutation.mutate(
       { description: description.trim() },
       {
         onSuccess: () => setDescription(''),
+        onError: (err) => setError(err.message || 'Could not add learning outcome.'),
       },
     )
   }
@@ -26,6 +29,12 @@ export function OutcomesTab({ course }: { course: CourseFull }) {
       <p className="mb-4 text-sm text-text-secondary">
         Define what learners will be able to do by the end of this course.
       </p>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleAdd} className="mb-6 flex items-start gap-3">
         <Input

@@ -17,17 +17,23 @@ export function CurriculumTab({ course }: { course: CourseFull }) {
   const [sectionTitle, setSectionTitle] = useState('')
   const [openSection, setOpenSection] = useState<number | null>(course.sections[0]?.id ?? null)
   const [lessonModal, setLessonModal] = useState<{ sectionId: number | null; sectionTitle: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const createSection = useCreateSection(course.id)
   const deleteSection = useDeleteSection(course.id)
 
   function addSection(e: FormEvent) {
     e.preventDefault()
+    setError(null)
     if (!sectionTitle.trim() || createSection.isPending) return
     createSection.mutate(
       { title: sectionTitle.trim() },
       {
-        onSuccess: () => setSectionTitle(''),
+        onSuccess: (section) => {
+          setSectionTitle('')
+          setOpenSection(section.id)
+        },
+        onError: (err) => setError(err.message || 'Could not create section.'),
       },
     )
   }
@@ -37,6 +43,12 @@ export function CurriculumTab({ course }: { course: CourseFull }) {
       <p className="mb-4 text-sm text-text-secondary">
         Organise the course into sections, each containing lessons (text, video, article or embed).
       </p>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+          {error}
+        </div>
+      )}
 
       {/* Add section */}
       <form onSubmit={addSection} className="mb-6 flex items-start gap-3">
@@ -180,9 +192,11 @@ function AddLessonModal({
     duration_minutes: '',
     is_free_preview: false,
   })
+  const [lessonError, setLessonError] = useState<string | null>(null)
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    setLessonError(null)
     if (!form.title.trim() || !modal || createLesson.isPending) return
     createLesson.mutate(
       {
@@ -194,7 +208,10 @@ function AddLessonModal({
         duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null,
         is_free_preview: form.is_free_preview,
       },
-      { onSuccess: onClose },
+      {
+        onSuccess: onClose,
+        onError: (err) => setLessonError(err.message || 'Could not create lesson.'),
+      },
     )
   }
 
@@ -206,6 +223,11 @@ function AddLessonModal({
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {lessonError && (
+          <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+            {lessonError}
+          </p>
+        )}
         <Input
           label="Lesson title"
           value={form.title}
