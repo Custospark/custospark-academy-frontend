@@ -9,6 +9,8 @@ export const ENDPOINTS = {
     LOGIN: '/auth/login',
     ME: '/auth/me',
     LOGOUT: '/auth/logout',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
   },
   COURSES: {
     INDEX: '/courses',

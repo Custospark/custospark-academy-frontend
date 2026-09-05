@@ -101,3 +101,42 @@ export function useRefreshUser() {
     onSuccess: (user) => dispatch(setUser(user)),
   })
 }
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  email: string
+  token: string
+  password: string
+  password_confirmation: string
+}
+
+interface MessageResponse {
+  message: string
+}
+
+export function useForgotPassword() {
+  return useMutation<MessageResponse, Error, ForgotPasswordRequest>({
+    mutationFn: async (data) => {
+      const { data: response } = await axiosInstance.post<MessageResponse>(
+        ENDPOINTS.AUTH.FORGOT_PASSWORD,
+        data,
+      )
+      return response
+    },
+  })
+}
+
+export function useResetPassword() {
+  return useMutation<MessageResponse, Error, ResetPasswordRequest>({
+    mutationFn: async (data) => {
+      const { data: response } = await axiosInstance.post<MessageResponse>(
+        ENDPOINTS.AUTH.RESET_PASSWORD,
+        data,
+      )
+      return response
+    },
+  })
+}

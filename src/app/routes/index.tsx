@@ -7,6 +7,8 @@ import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 
 const LandingLayout = lazy(() => import('../../modules/landing/LandingLayout'))
 const LandingPage = lazy(() => import('../../modules/landing/LandingPage'))
+const CoursesPage = lazy(() => import('../../modules/landing/CoursesPage'))
+const CourseDetailPage = lazy(() => import('../../modules/landing/CourseDetailPage'))
 const LoginPage = lazy(() => import('../../modules/auth/LoginPage'))
 const RegisterPage = lazy(() => import('../../modules/auth/RegisterPage'))
 const ForgotPasswordPage = lazy(() => import('../../modules/auth/ForgotPasswordPage'))
@@ -24,6 +26,8 @@ export function AppRoutes() {
       <Route element={<PublicRoute />}>
         <Route element={withSuspense(<LandingLayout />)}>
           <Route index element={withSuspense(<LandingPage />)} />
+          <Route path={ROUTES.COURSES} element={withSuspense(<CoursesPage />)} />
+          <Route path="courses/:id" element={withSuspense(<CourseDetailPage />)} />
         </Route>
         <Route path={ROUTES.LOGIN} element={withSuspense(<LoginPage />)} />
         <Route path={ROUTES.REGISTER} element={withSuspense(<RegisterPage />)} />

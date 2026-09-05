@@ -34,6 +34,15 @@ export interface CourseFee {
   is_required: boolean
 }
 
+export interface CourseSchedule {
+  id: number
+  title: string
+  starts_at: string | null
+  ends_at: string | null
+  location: string | null
+  is_online: boolean
+}
+
 export interface Course {
   id: number
   title: string
@@ -46,6 +55,7 @@ export interface Course {
   end_date: string | null
   is_self_paced: boolean
   fees: CourseFee[]
+  schedules?: CourseSchedule[] | null
 }
 
 export interface Enrollment {

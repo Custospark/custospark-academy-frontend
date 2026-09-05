@@ -4,7 +4,9 @@ import { ArrowLeft, CheckCircle2, Eye, EyeOff, Lock } from 'lucide-react'
 import AuthLayout from './AuthLayout'
 import { AUTH_HERO_IMAGES } from './authHeroImages'
 import { Button } from '../../shared/components/buttons/Button'
+import { useResetPassword } from '../../shared/api/account/AccountQueries'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
+import { apiErrorMessage } from '../../shared/utils/apiError'
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
@@ -15,23 +17,27 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const resetMutation = useResetPassword()
 
   const passwordsMatch = password === confirmPassword
   const inputCls =
     'w-full pl-11 pr-4 py-3.5 bg-surface-input border border-border-default rounded-lg focus:ring-2 focus:ring-border-focus focus:border-border-focus outline-none transition-colors text-sm text-text-primary placeholder:text-text-muted'
 
-  async function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!passwordsMatch || submitting) return
-    setSubmitting(true)
+    if (!passwordsMatch || resetMutation.isPending) return
 
-    try {
-      // Backend endpoint (auth/reset-password) is pending - record request locally for now.
-      setSubmitted(true)
-    } finally {
-      setSubmitting(false)
-    }
+    resetMutation.mutate(
+      {
+        email,
+        token,
+        password,
+        password_confirmation: confirmPassword,
+      },
+      {
+        onSuccess: () => setSubmitted(true),
+      },
+    )
   }
 
   return (
@@ -100,7 +106,18 @@ export default function ResetPasswordPage() {
             </p>
           )}
 
-          <Button type="submit" className="w-full gap-2 py-3.5" loading={submitting}>
+          {resetMutation.isError && (
+            <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+              {apiErrorMessage(resetMutation.error, 'Unable to reset your password.')}
+            </p>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full gap-2 py-3.5"
+            disabled={!passwordsMatch || password.length < 8 || token === ''}
+            loading={resetMutation.isPending}
+          >
             Update password
           </Button>
 

@@ -4,27 +4,28 @@ import { ArrowLeft, CheckCircle2, Mail } from 'lucide-react'
 import AuthLayout from './AuthLayout'
 import { AUTH_HERO_IMAGES } from './authHeroImages'
 import { Button } from '../../shared/components/buttons/Button'
+import { useForgotPassword } from '../../shared/api/account/AccountQueries'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
+import { apiErrorMessage } from '../../shared/utils/apiError'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const forgotMutation = useForgotPassword()
 
   const inputCls =
     'w-full pl-11 pr-4 py-3.5 bg-surface-input border border-border-default rounded-lg focus:ring-2 focus:ring-border-focus focus:border-border-focus outline-none transition-colors text-sm text-text-primary placeholder:text-text-muted'
 
-  async function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (submitting) return
-    setSubmitting(true)
+    if (!email.trim() || forgotMutation.isPending) return
 
-    try {
-      // Backend endpoint (auth/forgot-password) is pending - record request locally for now.
-      setSubmitted(true)
-    } finally {
-      setSubmitting(false)
-    }
+    forgotMutation.mutate(
+      { email: email.trim() },
+      {
+        onSuccess: () => setSubmitted(true),
+      },
+    )
   }
 
   return (
@@ -39,8 +40,8 @@ export default function ForgotPasswordPage() {
             <CheckCircle2 className="mx-auto h-10 w-10 text-semantic-success" />
             <h3 className="mt-3 text-lg font-bold text-white">Check your inbox</h3>
             <p className="mt-1.5 text-sm text-text-secondary">
-              If an account exists for <span className="font-semibold text-white">{email}</span>, we
-              have sent a link to reset your password.
+              If an account exists for <span className="font-semibold text-white">{email}</span>,
+              we have sent a link to reset your password.
             </p>
             <Button variant="secondary" size="md" className="mt-5" onClick={() => setSubmitted(false)}>
               Use a different email
@@ -61,7 +62,13 @@ export default function ForgotPasswordPage() {
             />
           </div>
 
-          <Button type="submit" className="w-full gap-2 py-3.5" loading={submitting}>
+          {forgotMutation.isError && (
+            <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+              {apiErrorMessage(forgotMutation.error, 'Unable to send password reset link.')}
+            </p>
+          )}
+
+          <Button type="submit" className="w-full gap-2 py-3.5" loading={forgotMutation.isPending}>
             Send reset link
           </Button>
 

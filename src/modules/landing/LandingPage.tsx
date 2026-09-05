@@ -156,7 +156,7 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to={ROUTES.REGISTER} className="w-full sm:w-auto">
                 <Button size="lg" className="w-full">
-                  Start learning free
+                  Start learning
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>

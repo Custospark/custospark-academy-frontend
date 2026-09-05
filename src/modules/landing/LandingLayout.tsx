@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { Home, UserRound, Menu, X } from 'lucide-react'
+import { Home, UserRound, Menu, X, BookOpen } from 'lucide-react'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { LogoImage } from '../../shared/components/brand/LogoImage'
@@ -11,6 +11,7 @@ import { cn } from '../../shared/utils/cn'
 
 const NAV_LINKS = [
   { label: 'Home', path: ROUTES.HOME, icon: Home },
+  { label: 'Courses', path: ROUTES.COURSES, icon: BookOpen },
 ] as const
 
 /**
@@ -84,72 +85,71 @@ export default function LandingLayout() {
             </button>
           </div>
         </nav>
-
-        <AnimatePresence>
-          {mobileOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                key="mobile-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-50 bg-black/60 md:hidden"
-                onClick={() => setMobileOpen(false)}
-              />
-
-              {/* Slide-in drawer from the right */}
-              <motion.div
-                key="mobile-drawer"
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
-                className="fixed inset-y-0 right-0 z-50 flex w-72 max-w-[85vw] flex-col border-l border-border-subtle bg-surface-section shadow-2xl md:hidden"
-              >
-                <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4">
-                  <span className="text-base font-bold text-white">{PRODUCT_NAME}</span>
-                  <button
-                    type="button"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-card hover:text-white"
-                    onClick={() => setMobileOpen(false)}
-                    aria-label="Close navigation"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <nav className="flex flex-col gap-1 p-5">
-                  {NAV_LINKS.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      onClick={() => setMobileOpen(false)}
-                      className="rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
-
-                <div className="mt-auto flex flex-col gap-3 p-5">
-                  <Link to={ROUTES.LOGIN} onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="md" className="w-full">
-                      Account
-                    </Button>
-                  </Link>
-                  <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
-                    <Button size="md" className="w-full">
-                      Start learning
-                    </Button>
-                  </Link>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
       </header>
+
+      {/* Mobile drawer + backdrop - rendered at root so it overlays the whole page */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 bg-black/60 md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+
+            <motion.div
+              key="mobile-drawer"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
+              className="fixed inset-y-0 right-0 z-50 flex w-72 max-w-[85vw] flex-col border-l border-border-subtle bg-surface-section shadow-2xl md:hidden"
+            >
+              <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4">
+                <span className="text-base font-bold text-white">{PRODUCT_NAME}</span>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-card hover:text-white"
+                  onClick={() => setMobileOpen(false)}
+                  aria-label="Close navigation"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-1 p-5">
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="mt-auto flex flex-col gap-3 p-5">
+                <Link to={ROUTES.LOGIN} onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="md" className="w-full">
+                    Account
+                  </Button>
+                </Link>
+                <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
+                  <Button size="md" className="w-full">
+                    Start learning
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <main className="flex-1 pb-24 md:pb-0">
         <Outlet />
