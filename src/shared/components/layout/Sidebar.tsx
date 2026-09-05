@@ -75,10 +75,9 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
                   key={item.to}
                   to={item.to}
                   end={item.to === ROUTES.DASHBOARD}
-                  title={collapsed ? item.label : undefined}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                      'group/nav relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                       collapsed && 'justify-center px-2',
                       isActive
                         ? 'bg-blue-500/15 text-blue-300'
@@ -88,6 +87,14 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   {!collapsed && item.label}
+                  {collapsed && (
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute left-full z-50 ml-3 whitespace-nowrap rounded-lg border border-border-default bg-surface-elevated px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/nav:opacity-100"
+                    >
+                      {item.label}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </div>
