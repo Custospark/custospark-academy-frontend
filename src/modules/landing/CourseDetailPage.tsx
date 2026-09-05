@@ -16,6 +16,7 @@ import { Button } from '../../shared/components/buttons/Button'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
 import type { CourseFee } from '../../shared/types'
+import { deliveryInfo } from '../../shared/utils/deliveryMode'
 
 const CATEGORY_DOT: Record<string, string> = {
   'Software & Coding': 'bg-cat-software',
@@ -95,6 +96,7 @@ export default function CourseDetailPage() {
   }
 
   const dot = CATEGORY_DOT[course.category ?? ''] ?? 'bg-cat-software'
+  const delivery = deliveryInfo(course)
   const startDate = formatDate(course.start_date)
   const endDate = formatDate(course.end_date)
   const tuition = course.fees.find((f) => f.fee_type === 'tuition')
@@ -104,19 +106,21 @@ export default function CourseDetailPage() {
     <div className="bg-surface-page">
       {/* Breadcrumb */}
       <div className="border-b border-border-subtle bg-surface-section">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+          <nav className="flex min-w-0 items-center gap-2 text-sm" aria-label="Breadcrumb">
             <Link to={ROUTES.HOME} className="font-medium text-text-secondary transition-colors hover:text-white">
               Home
             </Link>
-            <span className="text-text-muted">/</span>
-            <Link
-              to={ROUTES.COURSES}
-              className="font-medium text-text-secondary transition-colors hover:text-white"
-            >
-              Courses
-            </Link>
-            <span className="text-text-muted">/</span>
+            <span className="hidden text-text-muted sm:inline">/</span>
+            <span className="hidden sm:contents">
+              <Link
+                to={ROUTES.COURSES}
+                className="hidden font-medium text-text-secondary transition-colors hover:text-white sm:inline"
+              >
+                Courses
+              </Link>
+              <span className="hidden text-text-muted sm:inline">/</span>
+            </span>
             <span className="truncate font-semibold text-white">{course.title}</span>
           </nav>
           <Link
@@ -124,7 +128,8 @@ export default function CourseDetailPage() {
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border-default px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:border-border-strong hover:bg-surface-card hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            All courses
+            <span className="hidden sm:inline">All courses</span>
+            <span className="sm:hidden">Back</span>
           </Link>
         </div>
       </div>
@@ -135,21 +140,31 @@ export default function CourseDetailPage() {
         <div className="pointer-events-none absolute -bottom-32 left-0 h-72 w-72 rounded-full bg-orange-500/10 blur-[100px]" />
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="mb-4 flex items-center gap-2">
-              <span className={`h-3 w-3 rounded-full ${dot}`} />
-              <span className="text-sm font-medium uppercase tracking-wide text-text-tertiary">
-                {course.category}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${delivery.badge}`}>
+                <span className={`h-2 w-2 rounded-full ${delivery.dot}`} />
+                {delivery.label}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
+                <span className="text-sm font-medium uppercase tracking-wide text-text-tertiary">
+                  {course.category}
+                </span>
               </span>
             </div>
             <h1 className="max-w-3xl font-display text-4xl font-bold text-white sm:text-5xl">
               {course.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-text-secondary">{course.description}</p>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-text-secondary">{course.description}</p>
+
+            <div className="mt-6 rounded-xl border border-border-subtle bg-surface-card/60 px-5 py-4 text-sm text-text-secondary">
+              {delivery.description}
+            </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-text-secondary">
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-blue-400" />
-                {course.is_self_paced ? 'Self-paced' : 'Scheduled sessions'}
+                {delivery.label}
               </span>
               {startDate && (
                 <span className="inline-flex items-center gap-1.5">
@@ -249,11 +264,7 @@ export default function CourseDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="mt-4 text-sm text-text-secondary">
-                  {course.is_self_paced
-                    ? 'This course is self-paced - start anytime and learn at your own speed.'
-                    : 'Session dates are being finalised. Enroll to be notified when they are set.'}
-                </p>
+                <p className="mt-4 text-sm text-text-secondary">{delivery.description}</p>
               )}
             </div>
           </div>

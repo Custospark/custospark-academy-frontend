@@ -121,30 +121,32 @@ export default function LandingLayout() {
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-1 p-5">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+                <nav className="flex flex-col gap-1 p-5">
+                  {NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
 
-              <div className="mt-auto flex flex-col gap-3 p-5">
-                <Link to={ROUTES.LOGIN} onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" size="md" className="w-full">
-                    Account
-                  </Button>
-                </Link>
-                <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
-                  <Button size="md" className="w-full">
-                    Start learning
-                  </Button>
-                </Link>
+                <div className="flex flex-col gap-3 p-5">
+                  <Link to={ROUTES.LOGIN} onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="md" className="w-full">
+                      Account
+                    </Button>
+                  </Link>
+                  <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
+                    <Button size="md" className="w-full">
+                      Start learning
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </>

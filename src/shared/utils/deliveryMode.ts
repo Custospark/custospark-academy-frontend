@@ -1,0 +1,39 @@
+import type { Course } from '../types'
+
+export type DeliveryMode = 'live' | 'self_paced' | 'hybrid'
+
+export interface DeliveryInfo {
+  label: string
+  shortLabel: string
+  description: string
+  dot: string
+  badge: string
+}
+
+const DELIVERY: Record<DeliveryMode, DeliveryInfo> = {
+  live: {
+    label: 'Live classes',
+    shortLabel: 'Live',
+    description: 'Instructor-led live classes on a fixed schedule, with recordings available after each session.',
+    dot: 'bg-cat-business',
+    badge: 'bg-cat-business/15 text-cat-business border-cat-business/40',
+  },
+  self_paced: {
+    label: 'Self-paced',
+    shortLabel: 'Self-paced',
+    description: 'Pre-recorded lessons you can follow anytime, at your own speed.',
+    dot: 'bg-cat-software',
+    badge: 'bg-cat-software/15 text-cat-software border-cat-software/40',
+  },
+  hybrid: {
+    label: 'Live + self-paced',
+    shortLabel: 'Hybrid',
+    description: 'Combines scheduled live classes with self-paced pre-recorded material.',
+    dot: 'bg-cat-ai',
+    badge: 'bg-cat-ai/15 text-cat-ai border-cat-ai/40',
+  },
+}
+
+export function deliveryInfo(course: Pick<Course, 'delivery_mode' | 'is_self_paced'>): DeliveryInfo {
+  return DELIVERY[course.delivery_mode] ?? DELIVERY[course.is_self_paced ? 'self_paced' : 'live']
+}

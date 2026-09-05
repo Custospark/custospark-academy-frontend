@@ -6,15 +6,7 @@ import { Button } from '../../shared/components/buttons/Button'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
 import type { Course } from '../../shared/types'
-
-const CATEGORY_DOT: Record<string, string> = {
-  'Software & Coding': 'bg-cat-software',
-  'Design & UI/UX': 'bg-cat-design',
-  'AI & Technology': 'bg-cat-ai',
-  Business: 'bg-cat-business',
-  'Mobile Development': 'bg-cat-mobile',
-  Entrepreneurship: 'bg-cat-entrepreneurship',
-}
+import { deliveryInfo } from '../../shared/utils/deliveryMode'
 
 function formatFee(course: Course): string {
   const tuition = course.fees.find((f) => f.fee_type === 'tuition')
@@ -82,15 +74,18 @@ export default function CoursesPage() {
           className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {courses?.map((course) => {
-            const dot = CATEGORY_DOT[course.category ?? ''] ?? 'bg-cat-software'
+            const delivery = deliveryInfo(course)
             return (
               <motion.article
                 key={course.id}
                 variants={fadeUp}
                 className="group flex flex-col rounded-2xl border border-border-subtle bg-surface-card p-6 transition-all hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface-card-hover"
               >
-                <div className="mb-4 flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <span className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${delivery.badge}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${delivery.dot}`} />
+                    {delivery.shortLabel}
+                  </span>
                   <span className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
                     {course.category ?? 'Course'}
                   </span>
@@ -103,7 +98,7 @@ export default function CoursesPage() {
 
                 <div className="mt-4 flex items-center gap-1.5 text-xs text-text-muted">
                   <Clock className="h-3.5 w-3.5" />
-                  {course.is_self_paced ? 'Self-paced' : 'Scheduled sessions'}
+                  {delivery.label}
                 </div>
 
                 <div className="mt-5 flex items-center justify-between border-t border-border-subtle pt-5">

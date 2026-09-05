@@ -54,6 +54,7 @@ export interface Course {
   start_date: string | null
   end_date: string | null
   is_self_paced: boolean
+  delivery_mode: 'live' | 'self_paced' | 'hybrid'
   fees: CourseFee[]
   schedules?: CourseSchedule[] | null
 }
