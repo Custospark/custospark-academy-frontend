@@ -282,14 +282,14 @@ export default function CourseDetailPage() {
               {isSponsored(course.fees) ? 'All fees sponsored for this cohort' : `Total: ${formatMoney(total)}`}
             </div>
 
-            <div className="mt-5 space-y-3 border-t border-border-subtle pt-5">
-              <Link to={ROUTES.REGISTER}>
+            <div className="mt-5 border-t border-border-subtle pt-5">
+              <Link to={ROUTES.REGISTER} className="block">
                 <Button size="lg" className="w-full">
                   Enroll now
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to={ROUTES.LOGIN}>
+              <Link to={ROUTES.LOGIN} className="mt-3 block">
                 <Button variant="outline" size="lg" className="w-full">
                   Sign in to enroll
                 </Button>
