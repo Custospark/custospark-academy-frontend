@@ -47,6 +47,7 @@ export interface Course {
   id: number
   title: string
   slug: string
+  course_code: string | null
   description: string | null
   category: string | null
   cover_url: string | null
@@ -55,6 +56,12 @@ export interface Course {
   end_date: string | null
   is_self_paced: boolean
   delivery_mode: 'live' | 'self_paced' | 'hybrid'
+  level: 'beginner' | 'intermediate' | 'advanced'
+  language: string
+  duration_hours: number | null
+  target_audience: string | null
+  prerequisites: string | null
+  tags: string[] | null
   fees: CourseFee[]
   schedules?: CourseSchedule[] | null
 }

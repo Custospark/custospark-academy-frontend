@@ -20,10 +20,12 @@ const ResetPasswordPage = lazy(() => import('../../modules/auth/ResetPasswordPag
 const DashboardPage = lazy(() => import('../../modules/dashboard/DashboardPage'))
 const CatalogPage = lazy(() => import('../../modules/catalog/CatalogPage'))
 const MyCoursesPage = lazy(() => import('../../modules/myCourses/MyCoursesPage'))
+const MyCourseDetailPage = lazy(() => import('../../modules/myCourses/MyCourseDetailPage'))
 const SchedulesPage = lazy(() => import('../../modules/schedules/SchedulesPage'))
 const PaymentsPage = lazy(() => import('../../modules/payments/PaymentsPage'))
 const CertificatesPage = lazy(() => import('../../modules/certificates/CertificatesPage'))
 const AdminCoursesPage = lazy(() => import('../../modules/admin/courses/AdminCoursesPage'))
+const CourseBuilderPage = lazy(() => import('../../modules/admin/courses/CourseBuilderPage'))
 const AdminEnrollmentsPage = lazy(() => import('../../modules/admin/enrollments/AdminEnrollmentsPage'))
 const InstructorManagementPage = lazy(() => import('../../modules/admin/instructors/InstructorManagementPage'))
 const PlatformStatsPage = lazy(() => import('../../modules/admin/stats/PlatformStatsPage'))
@@ -56,6 +58,7 @@ export function AppRoutes() {
           <Route path={ROUTES.DASHBOARD} element={withSuspense(<DashboardPage />)} />
           <Route path={ROUTES.APP.CATALOG} element={withSuspense(<CatalogPage />)} />
           <Route path={ROUTES.APP.MY_COURSES} element={withSuspense(<MyCoursesPage />)} />
+          <Route path="app/my-courses/:id" element={withSuspense(<MyCourseDetailPage />)} />
           <Route path={ROUTES.APP.SCHEDULES} element={withSuspense(<SchedulesPage />)} />
           <Route path={ROUTES.APP.PAYMENTS} element={withSuspense(<PaymentsPage />)} />
           <Route path={ROUTES.APP.CERTIFICATES} element={withSuspense(<CertificatesPage />)} />
@@ -65,6 +68,7 @@ export function AppRoutes() {
       <Route element={<RoleAccessMiddleware module="courseManagement" />}>
         <Route element={withSuspense(<AppLayout />)}>
           <Route path={ROUTES.APP.ADMIN.COURSES} element={withSuspense(<AdminCoursesPage />)} />
+          <Route path="app/admin/courses/:id" element={withSuspense(<CourseBuilderPage />)} />
         </Route>
       </Route>
 
