@@ -12,7 +12,7 @@ export default function ForgotPasswordPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const inputCls =
-    'w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-colors text-sm'
+    'w-full pl-11 pr-4 py-3.5 bg-surface-input border border-border-default rounded-lg focus:ring-2 focus:ring-border-focus focus:border-border-focus outline-none transition-colors text-sm text-text-primary placeholder:text-text-muted'
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -35,12 +35,12 @@ export default function ForgotPasswordPage() {
     >
       {submitted ? (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
-            <CheckCircle2 className="mx-auto h-10 w-10 text-green-600" />
-            <h3 className="mt-3 text-lg font-bold text-gray-900">Check your inbox</h3>
-            <p className="mt-1.5 text-sm text-gray-600">
-              If an account exists for <span className="font-semibold">{email}</span>, we have sent
-              a link to reset your password.
+          <div className="rounded-2xl border border-semantic-success/40 bg-semantic-success/10 p-6 text-center">
+            <CheckCircle2 className="mx-auto h-10 w-10 text-semantic-success" />
+            <h3 className="mt-3 text-lg font-bold text-white">Check your inbox</h3>
+            <p className="mt-1.5 text-sm text-text-secondary">
+              If an account exists for <span className="font-semibold text-white">{email}</span>, we
+              have sent a link to reset your password.
             </p>
             <Button variant="secondary" size="md" className="mt-5" onClick={() => setSubmitted(false)}>
               Use a different email
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
             <input
               type="email"
               value={email}
@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <Link
               to={ROUTES.LOGIN}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-electric-blue hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-text-link hover:text-text-link-hover"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Back to sign in

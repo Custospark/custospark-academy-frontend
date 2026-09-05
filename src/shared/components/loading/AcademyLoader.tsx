@@ -12,7 +12,7 @@ export function AcademyLoader({ fullPage = false, className }: AcademyLoaderProp
   return (
     <div
       className={cn(
-        fullPage && 'flex min-h-screen items-center justify-center bg-gray-50',
+        fullPage && 'flex min-h-screen items-center justify-center bg-surface-page',
         className,
       )}
     >
@@ -23,13 +23,13 @@ export function AcademyLoader({ fullPage = false, className }: AcademyLoaderProp
           className="h-12 w-12 rounded-xl object-contain shadow-md"
         />
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-electric-blue" />
+          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-500" />
           <span
             className="h-1.5 w-1.5 animate-bounce rounded-full bg-academy-orange"
             style={{ animationDelay: '0.15s' }}
           />
           <span
-            className="h-1.5 w-1.5 animate-bounce rounded-full bg-custospark-blue"
+            className="h-1.5 w-1.5 animate-bounce rounded-full bg-blue-400"
             style={{ animationDelay: '0.3s' }}
           />
         </div>

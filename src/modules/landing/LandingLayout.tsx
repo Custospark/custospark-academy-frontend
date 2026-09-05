@@ -13,8 +13,8 @@ const NAV_LINKS = [
 ] as const
 
 /**
- * Public landing shell - light theme, sticky navbar, page outlet, footer
- * (mirrors Custosell LandingLayout).
+ * Public landing shell - dark navy theme, sticky navbar, page outlet, footer
+ * (mirrors Custosell LandingLayout structure).
  */
 export default function LandingLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -26,15 +26,13 @@ export default function LandingLayout() {
   }, [location.pathname])
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-white via-blue-50/30 to-white">
-      <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
+    <div className="flex min-h-screen flex-col bg-surface-page">
+      <header className="sticky top-0 z-50 border-b border-border-subtle bg-surface-page/80 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-3 py-3 sm:px-6 sm:py-4" aria-label="Main navigation">
           <div className="flex items-center gap-3">
-            <Link to={ROUTES.HOME}>
-              <LogoImage size="sm" withWordmark={false} />
-            </Link>
-            <Link to={ROUTES.HOME} className="text-lg font-bold text-electric-blue">
-              {PRODUCT_NAME}
+            <Link to={ROUTES.HOME} className="flex items-center gap-2.5">
+              <LogoImage size="sm" />
+              <span className="text-lg font-bold text-white">{PRODUCT_NAME}</span>
             </Link>
           </div>
 
@@ -50,8 +48,8 @@ export default function LandingLayout() {
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-300',
                       active
-                        ? 'bg-blue-50 text-electric-blue'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+                        ? 'bg-blue-500/15 text-blue-300'
+                        : 'text-text-secondary hover:bg-surface-card hover:text-white',
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -63,7 +61,7 @@ export default function LandingLayout() {
 
             <Link
               to={ROUTES.LOGIN}
-              className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-100 hover:text-slate-900 sm:px-4"
+              className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-text-secondary transition-all duration-300 hover:bg-surface-card hover:text-white sm:px-4"
             >
               <UserRound className="h-4 w-4" />
               <span>Account</span>
@@ -77,7 +75,7 @@ export default function LandingLayout() {
 
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-text-secondary hover:bg-surface-card md:hidden"
               onClick={() => setMobileOpen((open) => !open)}
               aria-label="Toggle navigation"
             >
@@ -87,13 +85,13 @@ export default function LandingLayout() {
         </nav>
 
         {mobileOpen && (
-          <div className="border-t border-slate-200/60 bg-white px-4 py-4 md:hidden">
+          <div className="border-t border-border-subtle bg-surface-page px-4 py-4 md:hidden">
             <nav className="flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                  className="rounded-lg px-3 py-2.5 text-sm font-semibold text-text-secondary hover:bg-surface-card hover:text-white"
                 >
                   {link.label}
                 </Link>
@@ -119,30 +117,30 @@ export default function LandingLayout() {
         <Outlet />
       </main>
 
-      <footer className="hidden border-t border-gray-200 bg-blue-50/30 py-8 md:block">
+      <footer className="hidden border-t border-border-subtle bg-surface-section py-8 md:block">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2.5">
-              <LogoImage size="sm" withWordmark={false} />
-              <span className="text-base font-bold text-electric-blue">{PRODUCT_NAME}</span>
+              <LogoImage size="sm" />
+              <span className="text-base font-bold text-white">{PRODUCT_NAME}</span>
             </div>
-            <p className="text-center text-sm text-gray-500 md:text-right">
+            <p className="text-center text-sm text-text-secondary md:text-right">
               {PRODUCT_NAME} is a product of{' '}
               <a
                 href="https://www.custospark.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-electric-blue hover:underline"
+                className="font-medium text-blue-300 hover:underline"
               >
                 Custospark Company Ltd
               </a>
             </p>
           </div>
-          <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-100 pt-6 sm:flex-row">
-            <span className="text-xs text-gray-400">
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-border-subtle pt-6 sm:flex-row">
+            <span className="text-xs text-text-muted">
               &copy; {new Date().getFullYear()} Custospark. All rights reserved.
             </span>
-            <Link to={ROUTES.REGISTER} className="text-xs font-medium text-electric-blue hover:text-blue-hover hover:underline">
+            <Link to={ROUTES.REGISTER} className="text-xs font-medium text-blue-300 hover:text-text-link-hover hover:underline">
               Create Account →
             </Link>
           </div>

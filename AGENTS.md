@@ -19,9 +19,11 @@ before any UI work. Key rules:
 - **CTAs**: Blue `#087CFF` (learn/navigate) vs Orange `#FF8A00` (act/enroll/start).
 - Supporting colors (teal/purple/sky/amber) only for categories, statuses, badges, illustrations.
 - Gradients reserved for hero, major CTAs, achievements, banners, featured courses.
-- **Guest + auth pages are LIGHT theme** (white/gray, mirrors Custosell). Body copy
-  `#0F172A`/`#475569`; metadata `#64748B` (all WCAG AA on white). Dark navy surfaces are
-  reserved for the authenticated app shell and the auth hero overlay.
+- **Semantic color system (dark navy foundation)** - page `#010517`, section `#03152B`,
+  card `#06152E`, elevated `#0D2945`, input `#0A2038`. Blue (`#008BFA`) is the primary
+  interactive color; Orange (`#F86803`) is reserved for important actions/achievements.
+  Never use orange and blue equally. Body text `#FFFFFF`/`#C5D2E0`; muted `#71859B`.
+  All text and UI must meet WCAG 2.2 AA (4.5:1 normal, 3:1 large/UI).
 
 ## Interaction Protocol
 

@@ -11,16 +11,16 @@ export default function DashboardPage() {
   const logoutMutation = useLogout()
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-page px-6">
       <img
         src="/custospark_academy_logo.png"
         alt="Custospark Academy"
         className="mb-6 h-16 w-16 rounded-2xl object-contain shadow-md"
       />
-      <h1 className="font-display text-2xl font-bold text-gray-900">
+      <h1 className="font-display text-2xl font-bold text-white">
         Welcome back, {user?.name?.split(' ')[0] || 'Learner'}
       </h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm text-text-secondary">
         Your dashboard is on the way - this is where courses, progress and certificates will live.
       </p>
       <Button

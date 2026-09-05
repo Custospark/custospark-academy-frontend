@@ -9,14 +9,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+  'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-page cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
 
 const variants: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-electric-blue text-white hover:bg-blue-hover active:bg-blue-hover focus:ring-electric-blue shadow-sm hover:shadow',
-  secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300 focus:ring-gray-400',
-  outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 focus:ring-electric-blue',
-  danger: 'bg-academy-red text-white hover:bg-red-700 active:bg-red-800 focus:ring-academy-red shadow-sm',
-  ghost: 'text-gray-600 hover:bg-gray-100 active:bg-gray-200 focus:ring-gray-400',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-700 focus:ring-blue-500 shadow-sm',
+  secondary: 'bg-academy-orange text-white hover:bg-orange-600 active:bg-orange-600 focus:ring-academy-orange shadow-sm',
+  outline: 'border border-border-default bg-transparent text-text-secondary hover:bg-surface-card hover:border-border-strong hover:text-white focus:ring-blue-500',
+  danger: 'bg-semantic-error text-white hover:bg-red-700 active:bg-red-800 focus:ring-semantic-error shadow-sm',
+  ghost: 'text-text-secondary hover:bg-surface-card hover:text-white active:bg-surface-card-hover focus:ring-blue-500',
 }
 
 const sizes: Record<NonNullable<ButtonProps['size']>, string> = {

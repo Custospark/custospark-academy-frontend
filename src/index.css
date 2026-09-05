@@ -1,51 +1,80 @@
 @import 'tailwindcss';
 
 /* ============================================================
-   Custospark Academy Design Tokens
-   Guest + auth pages use the light Custosell-standard theme.
-   Dark navy surfaces are reserved for the authenticated app.
+   Custospark Academy Semantic Color System
    Source of truth: docs/design-system.md
    ============================================================ */
 
 @theme {
-  /* Core brand colors */
-  --color-academy-navy: #03152b;
-  --color-deep-navy: #061d36;
-  --color-card-navy: #092541;
-  --color-elevated-navy: #0d2d4a;
-  --color-input-navy: #102f4a;
-  --color-border-navy: #1a4564;
+  /* Brand */
+  --color-academy-navy: #010517;
+  --color-deep-navy: #06152e;
+  --color-blue-700: #0040d9;
+  --color-blue-600: #006be6;
+  --color-blue-500: #008bfa;
+  --color-blue-400: #02aafa;
+  --color-blue-300: #38bdf8;
+  --color-orange-600: #e85d00;
+  --color-orange-500: #f86803;
+  --color-orange-400: #fc9103;
 
-  --color-custospark-blue: #008fe5;
-  --color-electric-blue: #087cff;
-  --color-academy-orange: #ff8a00;
-  --color-bright-orange: #ff6500;
-  --color-blue-hover: #006be6;
+  /* Surfaces */
+  --color-surface-page: #010517;
+  --color-surface-section: #03152b;
+  --color-surface-card: #06152e;
+  --color-surface-card-hover: #09213d;
+  --color-surface-elevated: #0d2945;
+  --color-surface-input: #0a2038;
 
-  /* Supporting colors */
+  /* Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #c5d2e0;
+  --color-text-tertiary: #94a6ba;
+  --color-text-muted: #71859b;
+  --color-text-disabled: #506477;
+  --color-text-link: #38bdf8;
+  --color-text-link-hover: #7dd3fc;
+
+  /* Borders */
+  --color-border-subtle: #122d47;
+  --color-border-default: #1b405f;
+  --color-border-strong: #285878;
+  --color-border-focus: #008bfa;
+
+  /* Semantic */
+  --color-semantic-success: #22c55e;
+  --color-semantic-warning: #f59e0b;
+  --color-semantic-error: #ef4444;
+  --color-semantic-info: #38bdf8;
+
+  /* Legacy aliases (keep existing component tokens working) */
+  --color-custospark-blue: #008bfa;
+  --color-electric-blue: #006be6;
+  --color-academy-orange: #f86803;
+  --color-bright-orange: #e85d00;
+  --color-blue-hover: #0040d9;
   --color-academy-teal: #16b8a6;
   --color-academy-green: #22c55e;
   --color-academy-purple: #8b5cf6;
   --color-academy-sky: #38bdf8;
   --color-academy-red: #ef4444;
   --color-academy-amber: #f59e0b;
+  --color-card-navy: #06152e;
+  --color-elevated-navy: #0d2945;
+  --color-input-navy: #0a2038;
+  --color-border-navy: #1b405f;
 
-  /* Light guest/auth theme text - WCAG AA contrast on white */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748b;
-
-  /* Category colors */
-  --color-cat-software: #087cff;
-  --color-cat-design: #8b5cf6;
+  /* Course categories */
+  --color-cat-software: #008bfa;
   --color-cat-ai: #16b8a6;
-  --color-cat-business: #ff8a00;
-  --color-cat-mobile: #38bdf8;
+  --color-cat-design: #8b5cf6;
+  --color-cat-business: #f86803;
   --color-cat-entrepreneurship: #f59e0b;
+  --color-cat-mobile: #38bdf8;
 
   /* Gradients */
-  --gradient-academy: linear-gradient(135deg, #008fe5 0%, #087cff 50%, #03152b 100%);
-  --gradient-cta: linear-gradient(135deg, #087cff 0%, #ff8a00 100%);
+  --gradient-academy: linear-gradient(135deg, #008bfa 0%, #006be6 50%, #010517 100%);
+  --gradient-cta: linear-gradient(135deg, #008bfa 0%, #f86803 100%);
 
   /* Fonts */
   --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -58,7 +87,7 @@
   }
 
   body {
-    background-color: #ffffff;
+    background-color: var(--color-surface-page);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -66,7 +95,7 @@
   }
 
   ::selection {
-    background-color: var(--color-electric-blue);
+    background-color: var(--color-blue-500);
     color: #ffffff;
   }
 }
@@ -81,7 +110,7 @@
   }
 
   .text-gradient-academy {
-    background-image: linear-gradient(135deg, #008fe5 0%, #087cff 60%);
+    background-image: linear-gradient(135deg, #008bfa 0%, #02aafa 60%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

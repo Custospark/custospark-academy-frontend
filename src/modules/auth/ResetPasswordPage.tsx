@@ -19,7 +19,7 @@ export default function ResetPasswordPage() {
 
   const passwordsMatch = password === confirmPassword
   const inputCls =
-    'w-full pl-11 pr-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-colors text-sm'
+    'w-full pl-11 pr-4 py-3.5 bg-surface-input border border-border-default rounded-lg focus:ring-2 focus:ring-border-focus focus:border-border-focus outline-none transition-colors text-sm text-text-primary placeholder:text-text-muted'
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -42,10 +42,10 @@ export default function ResetPasswordPage() {
     >
       {submitted ? (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
-            <CheckCircle2 className="mx-auto h-10 w-10 text-green-600" />
-            <h3 className="mt-3 text-lg font-bold text-gray-900">Password updated</h3>
-            <p className="mt-1.5 text-sm text-gray-600">
+          <div className="rounded-2xl border border-semantic-success/40 bg-semantic-success/10 p-6 text-center">
+            <CheckCircle2 className="mx-auto h-10 w-10 text-semantic-success" />
+            <h3 className="mt-3 text-lg font-bold text-white">Password updated</h3>
+            <p className="mt-1.5 text-sm text-text-secondary">
               Your password has been reset successfully. You can now sign in.
             </p>
             <Link to={ROUTES.LOGIN}>
@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               onClick={() => setShowPassword((show) => !show)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-text-muted hover:text-text-secondary"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -79,7 +79,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
             <input
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
@@ -91,11 +91,11 @@ export default function ResetPasswordPage() {
           </div>
 
           {confirmPassword.length > 0 && !passwordsMatch && (
-            <p className="text-sm text-red-600">Passwords do not match.</p>
+            <p className="text-sm text-semantic-error">Passwords do not match.</p>
           )}
 
           {token === '' && (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+            <p className="rounded-lg border border-semantic-warning/40 bg-semantic-warning/10 px-4 py-3 text-xs text-semantic-warning">
               This reset link is missing its token. Open the link from your email.
             </p>
           )}
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
           <div className="text-center">
             <Link
               to={ROUTES.LOGIN}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-electric-blue hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-text-link hover:text-text-link-hover"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Back to sign in
