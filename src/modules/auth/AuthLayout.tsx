@@ -39,10 +39,11 @@ export default function AuthLayout({
       {/* Left hero panel */}
       <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
         <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-br from-surface-page/95 via-deep-navy/90 to-surface-page/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-surface-page/40 via-deep-navy/30 to-surface-page/25" />
+        <div className="absolute inset-0 bg-surface-page/10" />
         <div className="relative z-10 flex w-full flex-col p-10 xl:p-12">
           <div className="flex flex-1 items-center">
-            <div className="max-w-md space-y-5">
+            <div className="max-w-md space-y-5 rounded-2xl bg-surface-page/55 p-6 backdrop-blur-md xl:p-8 ring-1 ring-border-subtle">
               <div>
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400">
                   {PRODUCT_TAGLINE}
@@ -113,13 +114,13 @@ export default function AuthLayout({
           <div className="w-full max-w-md">
             <div className="relative mb-8 h-44 overflow-hidden rounded-2xl ring-1 ring-border-subtle sm:h-48 lg:hidden">
               <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-surface-page/95 via-deep-navy/55 to-deep-navy/25" />
+              <div className="absolute inset-0 bg-gradient-to-t from-surface-page via-surface-page/70 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-400">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-300">
                   {PRODUCT_TAGLINE}
                 </p>
                 <p className="text-lg font-bold leading-snug text-white">Learn. Build. Launch.</p>
-                <p className="mt-2 line-clamp-2 text-xs text-text-tertiary">{PRODUCT_TAGLINE_LONG}</p>
+                <p className="mt-2 line-clamp-2 text-sm text-text-secondary">{PRODUCT_TAGLINE_LONG}</p>
               </div>
             </div>
 
