@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, BookOpen, Clock } from 'lucide-react'
 import { useCourses } from '../../shared/api/courses/CourseQueries'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { PageHeader } from '../../shared/components/layout/PageHeader'
+import { SearchInput } from '../../shared/components/inputs/SearchInput'
 import { Button } from '../../shared/components/buttons/Button'
 import { deliveryInfo } from '../../shared/utils/deliveryMode'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
@@ -16,14 +18,35 @@ function formatFee(course: Course): string {
 }
 
 export default function CatalogPage() {
-  const { data: courses, isPending, isError } = useCourses()
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const { data: courses, isPending, isError } = useCourses(search)
   const loading = isPending || (!courses && !isError)
+
+  // Debounce search input -> query term.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   return (
     <div>
       <PageHeader
         title="Course Catalog"
         description="Browse the courses available at Custospark Academy."
+        actions={
+          <div className="w-full sm:w-72">
+            <SearchInput
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onClear={() => {
+                setSearchInput('')
+                setSearch('')
+              }}
+              placeholder="Search courses..."
+            />
+          </div>
+        }
       />
 
       {loading && <AcademyLoader block />}

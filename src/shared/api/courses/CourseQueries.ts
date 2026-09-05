@@ -17,11 +17,14 @@ interface CourseResponse {
   data: Course
 }
 
-export function useCourses() {
+export function useCourses(search?: string) {
+  const term = search?.trim() || undefined
   return useQuery({
-    queryKey: courseKeys.all,
+    queryKey: [...courseKeys.all, term].filter(Boolean) as [string, ...string[]],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<CoursesResponse>(ENDPOINTS.COURSES.INDEX)
+      const { data } = await axiosInstance.get<CoursesResponse>(ENDPOINTS.COURSES.INDEX, {
+        params: term ? { q: term } : undefined,
+      })
       return data.data
     },
   })

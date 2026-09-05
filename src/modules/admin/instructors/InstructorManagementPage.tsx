@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { GraduationCap, Mail, UserPlus, UserRoundCog } from 'lucide-react'
 import { PageHeader } from '../../../shared/components/layout/PageHeader'
 import { AcademyLoader } from '../../../shared/components/loading/AcademyLoader'
+import { SearchInput } from '../../../shared/components/inputs/SearchInput'
 import { Button } from '../../../shared/components/buttons/Button'
 import { Input } from '../../../shared/components/inputs/Input'
 import { Modal } from '../../../shared/components/modals/Modal'
@@ -14,7 +15,9 @@ import {
 import { apiErrorMessage } from '../../../shared/utils/apiError'
 
 export default function InstructorManagementPage() {
-  const { data: instructors, isPending, isError } = useInstructors()
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const { data: instructors, isPending, isError } = useInstructors(search)
   const createMutation = useCreateInstructor()
   const deleteMutation = useDeleteInstructor()
 
@@ -24,6 +27,12 @@ export default function InstructorManagementPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const loading = isPending || (!instructors && !isError)
+
+  // Debounce search input -> query term.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   function handleCreate(e: FormEvent) {
     e.preventDefault()
@@ -51,10 +60,23 @@ export default function InstructorManagementPage() {
         title="Instructors"
         description="Manage the instructors on the platform."
         actions={
-          <Button onClick={() => setShowCreate(true)}>
-            <UserPlus className="h-4 w-4" />
-            Add instructor
-          </Button>
+          <div className="flex w-full items-center gap-3 sm:w-auto">
+            <div className="w-full sm:w-64">
+              <SearchInput
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onClear={() => {
+                  setSearchInput('')
+                  setSearch('')
+                }}
+                placeholder="Search instructors..."
+              />
+            </div>
+            <Button onClick={() => setShowCreate(true)} className="shrink-0">
+              <UserPlus className="h-4 w-4" />
+              Add instructor
+            </Button>
+          </div>
         }
       />
 

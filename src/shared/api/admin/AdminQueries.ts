@@ -74,12 +74,14 @@ export function useUpdateUser() {
   })
 }
 
-export function useInstructors() {
+export function useInstructors(search?: string) {
+  const term = search?.trim() || undefined
   return useQuery({
-    queryKey: adminKeys.instructors,
+    queryKey: [...adminKeys.instructors, term].filter(Boolean) as [string, ...string[]],
     queryFn: async () => {
       const { data } = await axiosInstance.get<ListResponse<AdminUser>>(
         ENDPOINTS.ADMIN.INSTRUCTORS.INDEX,
+        { params: term ? { q: term } : undefined },
       )
       return data.data
     },
