@@ -4,31 +4,49 @@ import { Eye, EyeOff, Lock, LogIn, Mail, User, UserPlus } from 'lucide-react'
 import AuthLayout from './AuthLayout'
 import { AUTH_HERO_IMAGES } from './authHeroImages'
 import { Button } from '../../shared/components/buttons/Button'
+import { PhoneNumberField } from '../../shared/components/inputs/PhoneNumberField'
 import { useRegister } from '../../shared/api/account/AccountQueries'
 import { useAppSelector } from '../../app/store/hooks/useApp'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
+import { buildInternationalPhone, type parseInternationalPhone } from '../../shared/utils/phoneNumber'
+import type { CountryCode } from '../../shared/utils/countryCodes'
 
 export default function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
+  const [phoneLocal, setPhoneLocal] = useState('')
+  const [country, setCountry] = useState<CountryCode | null>(null)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [slaAccepted, setSlaAccepted] = useState(true)
   const registerMutation = useRegister()
   const error = useAppSelector((state) => state.auth.error)
   const navigate = useNavigate()
 
   const passwordsMatch = password === confirmPassword
+  const phoneRequired = true
+  const phoneDigits = phoneLocal.replace(/\D/g, '')
+  const phoneValid = phoneDigits.length >= 6
   const inputCls =
     'w-full pl-11 pr-4 py-3.5 bg-surface-input border border-border-default rounded-lg focus:ring-2 focus:ring-border-focus focus:border-border-focus outline-none transition-colors text-sm text-text-primary placeholder:text-text-muted'
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!passwordsMatch || registerMutation.isPending) return
+    if (!passwordsMatch || !phoneValid || !slaAccepted || registerMutation.isPending) return
+
+    // Build the full international phone using the selected dial code.
+    const parsed = country
+      ? { countryCode: country, localNumber: phoneLocal }
+      : (null as ReturnType<typeof parseInternationalPhone> | null)
+
+    const fullPhone = buildInternationalPhone(
+      parsed?.countryCode ?? { name: 'Uganda', code: 'UG', dial_code: '+256', flag: '🇺🇬' },
+      phoneLocal,
+    )
 
     registerMutation.mutate(
-      { name: name.trim(), email: email.trim(), phone: phone.trim() || undefined, password },
+      { name: name.trim(), email: email.trim(), phone: fullPhone ?? phoneLocal, password },
       {
         onSuccess: () => navigate(ROUTES.DASHBOARD, { replace: true }),
       },
@@ -66,16 +84,14 @@ export default function RegisterPage() {
           />
         </div>
 
-        <div className="relative">
-          <UserPlus className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Phone (optional)"
-            className={inputCls}
-          />
-        </div>
+        <PhoneNumberField
+          value={phoneLocal}
+          onChange={setPhoneLocal}
+          onCountryChange={setCountry}
+          required={phoneRequired}
+          showWhatsAppPreference
+          error={phoneRequired && phoneLocal.length > 0 && !phoneValid ? 'Enter a valid phone number.' : undefined}
+        />
 
         <div className="relative">
           <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
@@ -120,7 +136,32 @@ export default function RegisterPage() {
           </p>
         )}
 
-        <Button type="submit" className="w-full gap-2 py-3.5" loading={registerMutation.isPending}>
+        <label className="flex cursor-pointer items-center justify-center gap-2">
+          <input
+            type="checkbox"
+            checked={slaAccepted}
+            onChange={(e) => setSlaAccepted(e.target.checked)}
+            className="h-4 w-4 cursor-pointer rounded border-border-default bg-surface-input text-electric-blue focus:ring-electric-blue"
+          />
+          <span className="text-xs text-text-muted">
+            I agree to the{' '}
+            <Link to={ROUTES.PRIVACY} className="text-text-secondary underline hover:text-blue-300">
+              Privacy Policy and Terms of Service
+            </Link>
+          </span>
+        </label>
+        {!slaAccepted && (
+          <p className="-mt-1 text-center text-xs text-semantic-error">
+            You must agree to the Privacy Policy and Terms of Service to create an account.
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          className="w-full gap-2 py-3.5"
+          disabled={!passwordsMatch || !phoneValid || !slaAccepted}
+          loading={registerMutation.isPending}
+        >
           <UserPlus className="h-4 w-4" aria-hidden />
           Create Account
         </Button>

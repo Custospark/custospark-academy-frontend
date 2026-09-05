@@ -1,6 +1,14 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { Home, UserRound, Menu, X, BookOpen } from 'lucide-react'
+import {
+  BookOpen,
+  GraduationCap,
+  Home,
+  Menu,
+  Shield,
+  UserRound,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { LogoImage } from '../../shared/components/brand/LogoImage'
@@ -12,6 +20,7 @@ import { cn } from '../../shared/utils/cn'
 const NAV_LINKS = [
   { label: 'Home', path: ROUTES.HOME, icon: Home },
   { label: 'Courses', path: ROUTES.COURSES, icon: BookOpen },
+  { label: 'Privacy', path: ROUTES.PRIVACY, icon: Shield },
 ] as const
 
 /**
@@ -74,7 +83,10 @@ export default function LandingLayout() {
 
             <div className="hidden sm:block">
               <Link to={ROUTES.REGISTER}>
-                <Button size="md">Start learning</Button>
+                <Button size="md">
+                  <GraduationCap className="h-4 w-4" />
+                  Start learning
+                </Button>
               </Link>
             </div>
 
@@ -158,8 +170,9 @@ export default function LandingLayout() {
                   </Link>
                   <Link to={ROUTES.REGISTER} onClick={() => setMobileOpen(false)}>
                     <Button size="md" className="w-full">
-                      Start learning
-                    </Button>
+                    <GraduationCap className="h-4 w-4" />
+                    Start learning
+                  </Button>
                   </Link>
                 </div>
               </div>
@@ -192,9 +205,14 @@ export default function LandingLayout() {
             </p>
           </div>
           <div className="flex flex-col items-center justify-between gap-3 border-t border-border-subtle pt-6 sm:flex-row">
-            <span className="text-xs text-text-muted">
-              &copy; {new Date().getFullYear()} Custospark. All rights reserved.
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-text-muted">
+                &copy; {new Date().getFullYear()} Custospark. All rights reserved.
+              </span>
+              <Link to={ROUTES.PRIVACY} className="text-xs font-medium text-blue-300 hover:text-text-link-hover hover:underline">
+                Privacy &amp; Terms
+              </Link>
+            </div>
             <Link to={ROUTES.REGISTER} className="text-xs font-medium text-blue-300 hover:text-text-link-hover hover:underline">
               Create Account →
             </Link>

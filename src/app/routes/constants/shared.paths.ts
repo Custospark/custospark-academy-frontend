@@ -12,4 +12,6 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   COURSES: '/courses',
   COURSE: (id: number | string) => `/courses/${id}`,
+  PRIVACY: '/privacy',
+  TERMS: '/terms',
 } as const
