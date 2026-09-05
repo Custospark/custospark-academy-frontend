@@ -40,33 +40,35 @@ export default function AuthLayout({
       <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
         <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-br from-surface-page/95 via-deep-navy/90 to-surface-page/80" />
-        <div className="relative z-10 flex w-full flex-col justify-between p-10 xl:p-12">
-          <div className="max-w-md space-y-5">
-            <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400">
-                {PRODUCT_TAGLINE}
+        <div className="relative z-10 flex w-full flex-col p-10 xl:p-12">
+          <div className="flex flex-1 items-center">
+            <div className="max-w-md space-y-5">
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400">
+                  {PRODUCT_TAGLINE}
+                </p>
+                <h1 className="mb-3 text-3xl font-bold leading-tight text-white xl:text-4xl">
+                  Learn. Build. Launch.
+                </h1>
+                <p className="text-base leading-relaxed text-text-secondary">{PRODUCT_TAGLINE_LONG}</p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {AUTH_HIGHLIGHTS.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="min-w-[100px] rounded-xl border border-border-subtle bg-white/5 px-4 py-3 text-center text-white backdrop-blur-md"
+                  >
+                    <div className="text-lg font-bold">{stat.value}</div>
+                    <div className="mt-0.5 text-xs text-text-tertiary">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-sm text-text-tertiary">
+                No credit card required · Enroll today · Learn at your pace
               </p>
-              <h1 className="mb-3 text-3xl font-bold leading-tight text-white xl:text-4xl">
-                Learn. Build. Launch.
-              </h1>
-              <p className="text-base leading-relaxed text-text-secondary">{PRODUCT_TAGLINE_LONG}</p>
             </div>
-
-            <div className="flex flex-wrap gap-3">
-              {AUTH_HIGHLIGHTS.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="min-w-[100px] rounded-xl border border-border-subtle bg-white/5 px-4 py-3 text-center text-white backdrop-blur-md"
-                >
-                  <div className="text-lg font-bold">{stat.value}</div>
-                  <div className="mt-0.5 text-xs text-text-tertiary">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-sm text-text-tertiary">
-              No credit card required · Enroll today · Learn at your pace
-            </p>
           </div>
 
           <div className="space-y-1 text-center">
