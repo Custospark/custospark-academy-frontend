@@ -168,11 +168,11 @@ export default function LandingLayout() {
         )}
       </AnimatePresence>
 
-      <main className="flex-1 pb-24 md:pb-0">
+      <main className="flex-1">
         <Outlet />
       </main>
 
-      <footer className="hidden border-t border-border-subtle bg-surface-section py-8 md:block">
+      <footer className="border-t border-border-subtle bg-surface-section py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2.5">
