@@ -5,7 +5,6 @@ import {
   Award,
   BookOpen,
   CheckCircle2,
-  GraduationCap,
   Rocket,
   Sparkles,
   Users,
@@ -211,9 +210,11 @@ export default function LandingPage() {
         <div className="pointer-events-none absolute -right-32 top-0 h-72 w-72 rounded-full bg-academy-orange/20 blur-[100px]" />
         <div className="relative mx-auto max-w-4xl px-4 py-24 text-center sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-academy-orange to-bright-orange text-white shadow-lg shadow-academy-orange/30">
-              <GraduationCap className="h-8 w-8" />
-            </div>
+            <img
+              src="/custospark_academy_logo.png"
+              alt="Custospark Academy"
+              className="mx-auto mb-6 h-16 w-16 rounded-2xl object-contain shadow-lg shadow-academy-orange/30"
+            />
             <h2 className="font-display text-3xl font-bold text-gray-900 sm:text-4xl">
               Your future self is ready to learn
             </h2>

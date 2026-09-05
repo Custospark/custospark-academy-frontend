@@ -1,4 +1,3 @@
-import { GraduationCap } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 interface AcademyLoaderProps {
@@ -18,9 +17,11 @@ export function AcademyLoader({ fullPage = false, className }: AcademyLoaderProp
       )}
     >
       <div className="flex flex-col items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl cta-gradient text-white shadow-md shadow-electric-blue/20">
-          <GraduationCap className="h-7 w-7" />
-        </div>
+        <img
+          src="/custospark_academy_logo.png"
+          alt="Custospark Academy"
+          className="h-12 w-12 rounded-xl object-contain shadow-md"
+        />
         <div className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-electric-blue" />
           <span

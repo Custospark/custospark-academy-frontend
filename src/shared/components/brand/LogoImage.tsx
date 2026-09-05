@@ -1,4 +1,3 @@
-import { GraduationCap } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 interface LogoImageProps {
@@ -8,26 +7,23 @@ interface LogoImageProps {
 }
 
 const SIZES = {
-  sm: 'h-8 w-8',
-  md: 'h-10 w-10',
+  sm: 'h-9 w-9',
+  md: 'h-11 w-11',
   lg: 'h-14 w-14',
 } as const
 
 /**
- * Custospark Academy logo - graduation cap with Custospark orbital DNA.
- * Replaces the placeholder SVG until the final logo asset is delivered.
+ * Custospark Academy logo - real brand asset (navy square with blue/orange mark).
  */
 export function LogoImage({ size = 'md', withWordmark = true, className }: LogoImageProps) {
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
-      <div
-        className={cn(
-          SIZES[size],
-          'flex items-center justify-center rounded-xl cta-gradient text-white shadow-md shadow-electric-blue/20',
-        )}
-      >
-        <GraduationCap className={size === 'lg' ? 'h-8 w-8' : size === 'md' ? 'h-6 w-6' : 'h-5 w-5'} />
-      </div>
+      <img
+        src="/custospark_academy_logo.png"
+        alt="Custospark Academy"
+        title="Custospark Academy"
+        className={cn(SIZES[size], 'shrink-0 rounded-lg object-contain')}
+      />
       {withWordmark && (
         <div className="leading-tight">
           <span className="block font-display text-lg font-bold tracking-tight text-electric-blue">

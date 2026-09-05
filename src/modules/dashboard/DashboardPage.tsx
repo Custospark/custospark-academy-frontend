@@ -1,4 +1,4 @@
-import { GraduationCap, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { Button } from '../../shared/components/buttons/Button'
 import { useLogout } from '../../shared/api/account/AccountQueries'
 import { useAppSelector } from '../../app/store/hooks/useApp'
@@ -12,9 +12,11 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl cta-gradient text-white shadow-md shadow-electric-blue/20">
-        <GraduationCap className="h-8 w-8" />
-      </div>
+      <img
+        src="/custospark_academy_logo.png"
+        alt="Custospark Academy"
+        className="mb-6 h-16 w-16 rounded-2xl object-contain shadow-md"
+      />
       <h1 className="font-display text-2xl font-bold text-gray-900">
         Welcome back, {user?.name?.split(' ')[0] || 'Learner'}
       </h1>
