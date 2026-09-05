@@ -65,12 +65,15 @@ function formatDate(date: string | null): string | null {
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: course, isLoading, isError } = useCourse(id ?? '')
+  const { data: course, isPending, isError } = useCourse(id ?? '')
 
-  if (isLoading) {
+  // Keep the loader visible until we actually have data (not just until the
+  // query transitions out of its initial pending state). This prevents the
+  // loader from vanishing before the fetched content is ready to render.
+  if (isPending || (!course && !isError)) {
     return (
       <div className="min-h-[60vh] bg-surface-page">
-        <AcademyLoader />
+        <AcademyLoader block />
       </div>
     )
   }

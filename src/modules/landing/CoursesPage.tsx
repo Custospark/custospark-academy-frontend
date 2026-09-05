@@ -21,7 +21,9 @@ const fadeUp = {
 }
 
 export default function CoursesPage() {
-  const { data: courses, isLoading, isError } = useCourses()
+  const { data: courses, isPending, isError } = useCourses()
+
+  const loading = isPending || (!courses && !isError)
 
   return (
     <div className="bg-surface-page">
@@ -45,7 +47,7 @@ export default function CoursesPage() {
 
       {/* Courses grid */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        {isLoading && <AcademyLoader />}
+        {loading && <AcademyLoader block />}
 
         {isError && (
           <div className="rounded-2xl border border-semantic-error/40 bg-semantic-error/10 p-8 text-center">
@@ -56,7 +58,7 @@ export default function CoursesPage() {
           </div>
         )}
 
-        {!isLoading && !isError && courses && courses.length === 0 && (
+        {!loading && !isError && courses && courses.length === 0 && (
           <div className="rounded-2xl border border-border-subtle bg-surface-card p-12 text-center">
             <GraduationCap className="mx-auto h-12 w-12 text-blue-400" />
             <h3 className="mt-4 text-lg font-bold text-white">No courses yet</h3>
