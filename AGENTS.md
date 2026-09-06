@@ -50,6 +50,7 @@ before any UI work. Key rules:
 | 12 | FE/BE stay in sync - API contracts reviewed across both stacks. |
 | 13 | **File size hard limit: 500 lines - refactor, never revert.** Split into modular files. |
 | 14 | Stage, commit, push after every change. Never `git add -A` - only exact paths. |
+| 15 | Deployment: web ships through the Backend repo per `Backend/DEPLOYMENT.md` §5A (DevOps second-deploy runbook, §5A.2 for the build) — run `npm run deploy:web:<staging\|production>`; never copy files into the shared server docroot by hand. |
 
 ## Frontend Conventions
 
