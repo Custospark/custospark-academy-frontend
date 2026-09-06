@@ -16,6 +16,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   APP: {
     CATALOG: '/app/catalog',
+    COURSE: (id: number | string) => `/app/courses/${id}`,
     MY_COURSES: '/app/my-courses',
     MY_COURSE: (id: number | string) => `/app/my-courses/${id}`,
     PAYMENTS: '/app/payments',

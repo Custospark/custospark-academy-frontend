@@ -39,4 +39,24 @@ describe('course content endpoints', () => {
     expect(ENDPOINTS.ADMIN.STATS).toBe('/admin/stats')
     expect(ENDPOINTS.ADMIN.USERS.UPDATE(4)).toBe('/admin/users/4')
   })
+
+  it('builds enrollment action URLs', () => {
+    expect(ENDPOINTS.ENROLLMENTS.PAY(3, 'application')).toBe('/enrollments/3/pay/application')
+    expect(ENDPOINTS.ENROLLMENTS.COMPLETE(3)).toBe('/enrollments/3/complete')
+    expect(ENDPOINTS.ENROLLMENTS.CANCEL(3)).toBe('/enrollments/3/cancel')
+  })
+
+  it('builds payment history, verify and receipt URLs', () => {
+    expect(ENDPOINTS.PAYMENTS.INDEX).toBe('/payments')
+    expect(ENDPOINTS.PAYMENTS.VERIFY(5)).toBe('/payments/5')
+    expect(ENDPOINTS.PAYMENTS.RECEIPT(5)).toBe('/payments/5/receipt')
+  })
+
+  it('builds certificate pdf and download URLs', () => {
+    expect(ENDPOINTS.CERTIFICATES.MINE).toBe('/certificates/mine')
+    expect(ENDPOINTS.CERTIFICATES.ISSUE(3)).toBe('/enrollments/3/certificate')
+    expect(ENDPOINTS.CERTIFICATES.SHOW(2)).toBe('/certificates/2')
+    expect(ENDPOINTS.CERTIFICATES.PDF(2)).toBe('/certificates/2/pdf')
+    expect(ENDPOINTS.CERTIFICATES.DOWNLOAD(2)).toBe('/certificates/2/download')
+  })
 })

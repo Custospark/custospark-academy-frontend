@@ -55,13 +55,13 @@ export function Modal({
             aria-modal="true"
             aria-label={title}
             className={cn(
-              'relative z-10 w-full rounded-2xl border border-border-subtle bg-surface-card shadow-2xl',
+              'relative z-10 flex max-h-[92vh] w-full flex-col rounded-2xl border border-border-subtle bg-surface-card shadow-2xl',
               SIZES[size],
               panelClassName,
             )}
           >
             {(title || showCloseButton) && (
-              <div className="flex items-start justify-between gap-4 border-b border-border-subtle px-6 py-4">
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border-subtle px-6 py-4">
                 <div>
                   {title && <h2 className="font-display text-lg font-bold text-white">{title}</h2>}
                   {subtitle && <p className="mt-0.5 text-sm text-text-secondary">{subtitle}</p>}
@@ -78,7 +78,7 @@ export function Modal({
                 )}
               </div>
             )}
-            <div className="px-6 py-5">{children}</div>
+            <div className="overflow-y-auto px-6 py-5">{children}</div>
           </motion.div>
         </div>
       )}

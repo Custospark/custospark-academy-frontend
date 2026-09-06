@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -13,10 +14,17 @@ import {
 } from 'lucide-react'
 import { useCourse } from '../../shared/api/courses/CourseQueries'
 import { Button } from '../../shared/components/buttons/Button'
+import {
+  EnrollmentActionButton,
+  EnrollmentStatusBadge,
+} from '../../shared/components/buttons/EnrollmentActionButton'
+import { ApplyModal } from '../../shared/components/modals/ApplyModal'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
+import { useAppSelector } from '../../app/store/hooks/useApp'
 import type { CourseFee } from '../../shared/types'
 import { deliveryInfo } from '../../shared/utils/deliveryMode'
+import { enrollmentMatrix } from '../../shared/utils/enrollmentMatrix'
 
 const CATEGORY_DOT: Record<string, string> = {
   'Software & Coding': 'bg-cat-software',
@@ -65,7 +73,9 @@ function formatDate(date: string | null): string | null {
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: course, isPending, isError } = useCourse(id ?? '')
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated)
+  const [applyOpen, setApplyOpen] = useState(false)
+  const { data: course, isPending, isError, refetch } = useCourse(id ?? '')
 
   // Keep the loader visible until we actually have data (not just until the
   // query transitions out of its initial pending state). This prevents the
@@ -87,7 +97,7 @@ export default function CourseDetailPage() {
           <p className="mt-2 text-sm text-text-secondary">
             This course may have been removed or is no longer available.
           </p>
-          <Link to={ROUTES.COURSES}>
+          <Link to={isAuthenticated ? ROUTES.APP.CATALOG : ROUTES.COURSES}>
             <Button variant="outline" size="md" className="mt-6">
               <ArrowLeft className="h-4 w-4" />
               Back to courses
@@ -104,6 +114,8 @@ export default function CourseDetailPage() {
   const endDate = formatDate(course.end_date)
   const tuition = course.fees.find((f) => f.fee_type === 'tuition')
   const total = feeTotal(course.fees)
+  const enrolled = course.enrollment
+  const entry = enrolled ? enrollmentMatrix(enrolled.status, course.fees) : null
 
   return (
     <div className="bg-surface-page">
@@ -111,13 +123,13 @@ export default function CourseDetailPage() {
       <div className="border-b border-border-subtle bg-surface-section">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <nav className="flex min-w-0 items-center gap-2 text-sm" aria-label="Breadcrumb">
-            <Link to={ROUTES.HOME} className="font-medium text-text-secondary transition-colors hover:text-white">
-              Home
+            <Link to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME} className="font-medium text-text-secondary transition-colors hover:text-white">
+              {isAuthenticated ? 'Dashboard' : 'Home'}
             </Link>
             <span className="hidden text-text-muted sm:inline">/</span>
             <span className="hidden sm:contents">
               <Link
-                to={ROUTES.COURSES}
+                to={isAuthenticated ? ROUTES.APP.CATALOG : ROUTES.COURSES}
                 className="hidden font-medium text-text-secondary transition-colors hover:text-white sm:inline"
               >
                 Courses
@@ -127,7 +139,7 @@ export default function CourseDetailPage() {
             <span className="truncate font-semibold text-white">{course.title}</span>
           </nav>
           <Link
-            to={ROUTES.COURSES}
+            to={isAuthenticated ? ROUTES.APP.CATALOG : ROUTES.COURSES}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border-default px-3 py-2 text-xs font-semibold text-text-secondary transition-colors hover:border-border-strong hover:bg-surface-card hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -283,17 +295,49 @@ export default function CourseDetailPage() {
             </div>
 
             <div className="mt-5 border-t border-border-subtle pt-5">
-              <Link to={ROUTES.REGISTER} className="block">
-                <Button size="lg" className="w-full">
-                  Enroll now
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to={ROUTES.LOGIN} className="mt-3 block">
-                <Button variant="outline" size="lg" className="w-full">
-                  Sign in to enroll
-                </Button>
-              </Link>
+              {enrolled ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-text-muted">Your status</span>
+                    <EnrollmentStatusBadge status={enrolled.status} />
+                  </div>
+                  {entry?.note && (
+                    <p className="text-xs leading-relaxed text-text-secondary">{entry.note}</p>
+                  )}
+                  <EnrollmentActionButton
+                    courseId={course.id}
+                    courseTitle={course.title}
+                    enrollmentId={enrolled.id}
+                    status={enrolled.status}
+                    fees={course.fees}
+                    size="lg"
+                    className="w-full"
+                  />
+                </div>
+              ) : (
+                <div>
+                  {isAuthenticated ? (
+                    <Button size="lg" className="w-full" onClick={() => setApplyOpen(true)}>
+                      Enroll now
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <>
+                      <Link to={ROUTES.REGISTER} className="block">
+                        <Button size="lg" className="w-full">
+                          Enroll now
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link to={ROUTES.LOGIN} className="mt-3 block">
+                        <Button variant="outline" size="lg" className="w-full">
+                          Sign in to enroll
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="mt-5 space-y-2 border-t border-border-subtle pt-5 text-xs text-text-muted">
@@ -309,6 +353,18 @@ export default function CourseDetailPage() {
           </aside>
         </div>
       </section>
+
+      <ApplyModal
+        open={applyOpen}
+        onClose={() => setApplyOpen(false)}
+        courseId={course.id}
+        courseTitle={course.title}
+        applicationFee={course.fees.find((f) => f.fee_type === 'application')?.amount ?? 0}
+        onChanged={() => {
+          setApplyOpen(false)
+          refetch()
+        }}
+      />
     </div>
   )
 }

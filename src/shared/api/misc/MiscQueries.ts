@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { axiosInstance } from '../../../app/api/axiosConfig'
 import { ENDPOINTS } from '../endpoints'
+import { learnerKeys } from '../learner/LearnerCourseQueries'
+import { courseKeys } from '../courses/CourseQueries'
 import type { CourseSchedule } from '../../types'
 
 export const miscKeys = {
   certificates: ['certificates', 'mine'] as const,
+  certificatePdf: (certificateId: number) => ['certificates', 'pdf', certificateId] as const,
   schedules: ['schedules'] as const,
   adminEnrollments: ['admin', 'enrollments'] as const,
 }
@@ -19,6 +22,8 @@ export interface CertificateItem {
   certificate_reference: string
   issued_at: string | null
   pdf_path: string | null
+  pdf_url: string | null
+  download_url: string | null
 }
 
 export function useMyCertificates() {
@@ -28,6 +33,40 @@ export function useMyCertificates() {
       const { data } = await axiosInstance.get<{ data: CertificateItem[] }>(ENDPOINTS.CERTIFICATES.MINE)
       return data.data
     },
+  })
+}
+
+export function useIssueCertificate() {
+  const queryClient = useQueryClient()
+
+  return useMutation<CertificateItem, Error, { enrollmentId: number }>({
+    mutationFn: async ({ enrollmentId }) => {
+      const { data } = await axiosInstance.post<{ data: CertificateItem }>(
+        ENDPOINTS.CERTIFICATES.ISSUE(enrollmentId),
+      )
+      return data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: miscKeys.certificates })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
+      queryClient.invalidateQueries({ queryKey: courseKeys.all })
+    },
+  })
+}
+
+/** Fetches a certificate's rendered PDF as a blob for preview/download. */
+export function useCertificatePdf(certificateId: number | null) {
+  return useQuery({
+    queryKey: miscKeys.certificatePdf(certificateId ?? 0),
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<Blob>(
+        ENDPOINTS.CERTIFICATES.PDF(certificateId as number),
+        { responseType: 'blob' },
+      )
+      return data
+    },
+    enabled: certificateId !== null && Number.isFinite(certificateId),
+    staleTime: Infinity,
   })
 }
 

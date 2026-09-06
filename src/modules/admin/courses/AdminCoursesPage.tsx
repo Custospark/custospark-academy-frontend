@@ -26,6 +26,9 @@ interface CourseForm {
   target_audience: string
   tags: string
   status: string
+  application_fee: string
+  tuition_fee: string
+  certificate_fee: string
 }
 
 const EMPTY_FORM: CourseForm = {
@@ -40,6 +43,9 @@ const EMPTY_FORM: CourseForm = {
   target_audience: '',
   tags: '',
   status: 'draft',
+  application_fee: '',
+  tuition_fee: '',
+  certificate_fee: '',
 }
 
 export default function AdminCoursesPage() {
@@ -72,6 +78,8 @@ export default function AdminCoursesPage() {
   }
 
   function openEdit(course: Course) {
+    const feeValue = (type: string) =>
+      String(course.fees.find((f) => f.fee_type === type)?.amount ?? '')
     setForm({
       title: course.title,
       description: course.description ?? '',
@@ -84,6 +92,9 @@ export default function AdminCoursesPage() {
       target_audience: course.target_audience ?? '',
       tags: (course.tags ?? []).join(', '),
       status: course.status,
+      application_fee: feeValue('application'),
+      tuition_fee: feeValue('tuition'),
+      certificate_fee: feeValue('certificate'),
     })
     setFormError(null)
     setEditCourse(course)
@@ -108,6 +119,9 @@ export default function AdminCoursesPage() {
           ? form.tags.split(',').map((t) => t.trim()).filter(Boolean)
           : null,
         status: form.status,
+        application_fee: form.application_fee ? Number(form.application_fee) : 0,
+        tuition_fee: form.tuition_fee ? Number(form.tuition_fee) : 0,
+        certificate_fee: form.certificate_fee ? Number(form.certificate_fee) : 0,
       }
 
       if (editCourse) {
@@ -341,6 +355,38 @@ export default function AdminCoursesPage() {
             onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
             placeholder="data, python, analytics"
           />
+
+          <div className="rounded-xl border border-border-subtle bg-surface-section p-4">
+            <label className="mb-2 block text-sm font-medium text-text-secondary">
+              Course fees <span className="text-xs text-text-muted">(0 or blank = sponsored/waived)</span>
+            </label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Input
+                label="Application fee"
+                type="number"
+                min={0}
+                value={form.application_fee}
+                onChange={(e) => setForm((f) => ({ ...f, application_fee: e.target.value }))}
+                placeholder="0"
+              />
+              <Input
+                label="Tuition fee"
+                type="number"
+                min={0}
+                value={form.tuition_fee}
+                onChange={(e) => setForm((f) => ({ ...f, tuition_fee: e.target.value }))}
+                placeholder="0"
+              />
+              <Input
+                label="Certificate fee"
+                type="number"
+                min={0}
+                value={form.certificate_fee}
+                onChange={(e) => setForm((f) => ({ ...f, certificate_fee: e.target.value }))}
+                placeholder="0"
+              />
+            </div>
+          </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-text-secondary">Status</label>

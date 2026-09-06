@@ -34,6 +34,69 @@ export interface CourseFee {
   is_required: boolean
 }
 
+export type PaymentFeeType = 'application' | 'tuition' | 'certificate'
+export type PaymentStatus = 'pending' | 'processing' | 'paid' | 'failed' | 'refunded'
+
+export interface PaymentItem {
+  id: number
+  enrollment_id: number
+  course_title: string | null
+  fee_type: PaymentFeeType
+  amount: number
+  currency: string
+  status: PaymentStatus
+  method: string | null
+  reference: string | null
+  invoice_number: string | null
+  paid_at: string | null
+  created_at: string | null
+  receipt_url: string | null
+}
+
+export interface EnrollmentPaymentSummary {
+  id: number
+  fee_type: PaymentFeeType
+  amount: number
+  currency: string
+  status: PaymentStatus
+  reference: string | null
+  paid_at: string | null
+}
+
+export interface CompletionCategory {
+  key: string
+  label: string
+  grading: 'learner' | 'auto' | 'instructor'
+  total: number
+  completed: number
+  percent: number
+}
+
+export interface PendingInstructorItem {
+  type: string
+  id: number
+  title: string | null
+  status: string
+}
+
+export interface CompletionManifest {
+  total_required: number
+  completed_required: number
+  percent: number
+  is_complete: boolean
+  delivery_mode: string
+  auto_completes: boolean
+  categories: CompletionCategory[]
+  pending_instructor: PendingInstructorItem[]
+}
+
+export interface CourseProgress {
+  total_lessons: number
+  completed_lessons: number
+  percent: number
+  completion: CompletionManifest
+}
+
 export interface CourseSchedule {
   id: number
   title: string
@@ -63,7 +126,18 @@ export interface Course {
   prerequisites: string | null
   tags: string[] | null
   fees: CourseFee[]
+  enrollment?: CourseEnrollment | null
   schedules?: CourseSchedule[] | null
+}
+
+export interface CourseEnrollment {
+  id: number
+  course_id: number
+  status: string
+  applied_at: string | null
+  admitted_at: string | null
+  completed_at: string | null
+  certified_at: string | null
 }
 
 export interface Enrollment {
@@ -78,6 +152,7 @@ export interface Enrollment {
   completed_at: string | null
   certified_at: string | null
   application_review_note: string | null
-  payments: unknown[]
+  fees: CourseFee[]
+  payments: EnrollmentPaymentSummary[]
   certificate: unknown
 }

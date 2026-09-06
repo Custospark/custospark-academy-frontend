@@ -27,6 +27,11 @@ export const ENDPOINTS = {
     COMPLETE: (id: number) => `/enrollments/${id}/complete`,
     CANCEL: (id: number) => `/enrollments/${id}/cancel`,
   },
+  PAYMENTS: {
+    INDEX: '/payments',
+    VERIFY: (id: number) => `/payments/${id}`,
+    RECEIPT: (id: number) => `/payments/${id}/receipt`,
+  },
   LEARNER: {
     CONTENT: (courseId: number) => `/courses/${courseId}/content`,
     PROGRESS: (courseId: number) => `/courses/${courseId}/progress`,
@@ -36,7 +41,10 @@ export const ENDPOINTS = {
   },
   CERTIFICATES: {
     MINE: '/certificates/mine',
+    ISSUE: (enrollmentId: number) => `/enrollments/${enrollmentId}/certificate`,
     SHOW: (id: number) => `/certificates/${id}`,
+    PDF: (id: number) => `/certificates/${id}/pdf`,
+    DOWNLOAD: (id: number) => `/certificates/${id}/download`,
   },
   ADMIN: {
     COURSES: {

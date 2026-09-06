@@ -10,7 +10,11 @@ import {
   NotebookPen,
   Target,
 } from 'lucide-react'
-import { useLearnerCourse, useLearnerProgress } from '../../shared/api/learner/LearnerCourseQueries'
+import {
+  useLearnerCourse,
+  useLearnerProgress,
+  useMyEnrollments,
+} from '../../shared/api/learner/LearnerCourseQueries'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { cn } from '../../shared/utils/cn'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
@@ -18,6 +22,7 @@ import { CurriculumPlayer } from './CurriculumPlayer'
 import { ResourcesSection } from './ResourcesSection'
 import { AssessmentsSection } from './AssessmentsSection'
 import { AssignmentsSection } from './AssignmentsSection'
+import { CompletionCard } from './CompletionCard'
 
 const TABS = [
   { id: 'curriculum', label: 'Curriculum', icon: NotebookPen },
@@ -33,6 +38,8 @@ export default function MyCourseDetailPage() {
   const courseId = Number(id)
   const { data: course, isPending, isError } = useLearnerCourse(courseId)
   const { data: progress } = useLearnerProgress(courseId)
+  const { data: enrollments } = useMyEnrollments()
+  const enrollment = enrollments?.find((e) => e.course_id === courseId)
   const [activeTab, setActiveTab] = useState<TabId>('curriculum')
 
   if (!Number.isFinite(courseId)) {
@@ -103,6 +110,8 @@ export default function MyCourseDetailPage() {
               </div>
             </div>
           </div>
+
+          <CompletionCard progress={progress} enrollment={enrollment} />
 
           {/* Learning outcomes */}
           {course.learning_outcomes.length > 0 && (

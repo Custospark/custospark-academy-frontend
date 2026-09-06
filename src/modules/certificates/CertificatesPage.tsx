@@ -1,11 +1,44 @@
-import { Award } from 'lucide-react'
-import { useMyCertificates } from '../../shared/api/misc/MiscQueries'
+import { useEffect, useMemo, useState } from 'react'
+import { Award, Download, Eye } from 'lucide-react'
+import { useCertificatePdf, useMyCertificates } from '../../shared/api/misc/MiscQueries'
+import { ENDPOINTS } from '../../shared/api/endpoints'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { PageHeader } from '../../shared/components/layout/PageHeader'
+import { Button } from '../../shared/components/buttons/Button'
+import { Modal } from '../../shared/components/modals/Modal'
+import { downloadFile } from '../../shared/utils/download'
 
 export default function CertificatesPage() {
   const { data: certificates, isPending, isError } = useMyCertificates()
+  const [previewId, setPreviewId] = useState<number | null>(null)
+  const { data: pdfBlob, isFetching } = useCertificatePdf(previewId)
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
   const loading = isPending || (!certificates && !isError)
+
+  const previewCertificate = certificates?.find((c) => c.id === previewId) ?? null
+
+  const objectUrl = useMemo(() => {
+    if (!pdfBlob) return null
+    return window.URL.createObjectURL(pdfBlob)
+  }, [pdfBlob])
+
+  useEffect(() => {
+    return () => {
+      if (objectUrl) window.URL.revokeObjectURL(objectUrl)
+    }
+  }, [objectUrl])
+
+  async function downloadCertificate(certificateId: number, reference: string) {
+    setDownloadingId(certificateId)
+    try {
+      await downloadFile(
+        ENDPOINTS.CERTIFICATES.DOWNLOAD(certificateId),
+        `certificate-${reference.replace(/[^A-Za-z0-9_-]/g, '-')}.pdf`,
+      )
+    } finally {
+      setDownloadingId(null)
+    }
+  }
 
   return (
     <div>
@@ -63,10 +96,49 @@ export default function CertificatesPage() {
                     : 'Issuance pending'}
                 </div>
               </div>
+              <div className="mt-4 flex gap-2">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => setPreviewId(certificate.id)}>
+                  <Eye className="h-3.5 w-3.5" />
+                  Preview
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => downloadCertificate(certificate.id, certificate.certificate_reference)}
+                  loading={downloadingId === certificate.id}
+                  disabled={downloadingId !== null}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <Modal
+        open={previewId !== null}
+        onClose={() => setPreviewId(null)}
+        title={previewCertificate?.course_title ?? 'Certificate preview'}
+        subtitle={previewCertificate?.certificate_reference}
+        size="lg"
+      >
+        {isFetching && <div className="flex h-[70vh] items-center justify-center"><AcademyLoader /></div>}
+        {!isFetching && objectUrl && (
+          <iframe
+            title="Certificate preview"
+            src={objectUrl}
+            className="h-[70vh] w-full rounded-xl border border-border-subtle"
+          />
+        )}
+        {!isFetching && !objectUrl && (
+          <div className="flex h-[70vh] items-center justify-center rounded-xl border border-semantic-error/40 bg-semantic-error/10">
+            <p className="text-sm text-semantic-error">Could not load the certificate preview.</p>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -57,6 +57,7 @@ export function AppRoutes() {
         <Route element={withSuspense(<AppLayout />)}>
           <Route path={ROUTES.DASHBOARD} element={withSuspense(<DashboardPage />)} />
           <Route path={ROUTES.APP.CATALOG} element={withSuspense(<CatalogPage />)} />
+          <Route path={ROUTES.APP.COURSE(':id')} element={withSuspense(<CourseDetailPage />)} />
           <Route path={ROUTES.APP.MY_COURSES} element={withSuspense(<MyCoursesPage />)} />
           <Route path="app/my-courses/:id" element={withSuspense(<MyCourseDetailPage />)} />
           <Route path={ROUTES.APP.SCHEDULES} element={withSuspense(<SchedulesPage />)} />
