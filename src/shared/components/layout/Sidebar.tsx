@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { ChevronsLeft, ChevronsRight, GraduationCap, X } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, X } from 'lucide-react'
 import { sidebarNavGroups } from './sidebarNavGroups'
 import { ROUTES } from '../../../app/routes/constants/shared.paths'
 import { useAppSelector } from '../../../app/store/hooks/useApp'
@@ -108,16 +108,14 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
       <div className="border-t border-border-subtle p-3">
         {collapsed ? (
           <div
-            className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg cta-gradient text-white"
+            className="mx-auto flex h-9 w-9 items-center justify-center"
             title={user?.name}
           >
-            <GraduationCap className="h-5 w-5" />
+            <LogoImage size="sm" />
           </div>
         ) : (
           <div className="flex items-center gap-2.5 rounded-xl border border-border-subtle bg-surface-card p-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg cta-gradient text-white">
-              <GraduationCap className="h-5 w-5" />
-            </div>
+            <LogoImage size="sm" className="shrink-0 rounded-lg" />
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-white">{user?.name ?? 'Learner'}</div>
               <div className="truncate text-xs capitalize text-text-muted">{role}</div>
