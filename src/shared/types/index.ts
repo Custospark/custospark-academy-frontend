@@ -99,11 +99,29 @@ export interface CourseProgress {
 
 export interface CourseSchedule {
   id: number
+  course_id?: number
+  course_title?: string | null
+  instructor_id?: number | null
+  instructor_name?: string | null
   title: string
   starts_at: string | null
   ends_at: string | null
   location: string | null
   is_online: boolean
+}
+
+/** Staff-facing enrolment counters per course (from /admin/courses). */
+export interface CourseEnrollmentSummary {
+  enrolled: number
+  pending_review: number
+  admitted: number
+  tuition_paid: number
+  in_progress: number
+  completed: number
+  certified: number
+  certificates_issued: number
+  rejected: number
+  cancelled: number
 }
 
 export interface Course {
@@ -115,6 +133,8 @@ export interface Course {
   category: string | null
   cover_url: string | null
   status: 'draft' | 'published' | 'archived'
+  created_by?: number | null
+  enrollment_summary?: CourseEnrollmentSummary | null
   start_date: string | null
   end_date: string | null
   is_self_paced: boolean

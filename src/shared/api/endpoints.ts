@@ -18,7 +18,12 @@ export const ENDPOINTS = {
     SCHEDULES: (id: number) => `/courses/${id}/schedules`,
   },
   SCHEDULES: {
+    MINE: '/schedules/mine',
     STORE: (courseId: number) => `/admin/courses/${courseId}/schedules`,
+    UPDATE: (courseId: number, scheduleId: number) =>
+      `/admin/courses/${courseId}/schedules/${scheduleId}`,
+    DESTROY: (courseId: number, scheduleId: number) =>
+      `/admin/courses/${courseId}/schedules/${scheduleId}`,
   },
   ENROLLMENTS: {
     APPLY: '/enrollments',
@@ -45,6 +50,7 @@ export const ENDPOINTS = {
     SHOW: (id: number) => `/certificates/${id}`,
     PDF: (id: number) => `/certificates/${id}/pdf`,
     DOWNLOAD: (id: number) => `/certificates/${id}/download`,
+    PREVIEW: (courseId: number) => `/courses/${courseId}/certificate-preview`,
   },
   ADMIN: {
     COURSES: {

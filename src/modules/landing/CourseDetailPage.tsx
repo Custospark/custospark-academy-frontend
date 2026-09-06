@@ -9,6 +9,7 @@ import {
   Clock,
   GraduationCap,
   MapPin,
+  ScrollText,
   Users,
   Video,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ import {
   EnrollmentStatusBadge,
 } from '../../shared/components/buttons/EnrollmentActionButton'
 import { ApplyModal } from '../../shared/components/modals/ApplyModal'
+import { CertificatePreviewModal } from '../../shared/components/certificates/CertificatePreviewModal'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
 import { useAppSelector } from '../../app/store/hooks/useApp'
@@ -75,6 +77,7 @@ export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
   const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated)
   const [applyOpen, setApplyOpen] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
   const { data: course, isPending, isError, refetch } = useCourse(id ?? '')
 
   // Keep the loader visible until we actually have data (not just until the
@@ -349,6 +352,16 @@ export default function CourseDetailPage() {
                 <GraduationCap className="h-4 w-4" />
                 Certificate on completion
               </div>
+              {course.status === 'published' && (
+                <button
+                  type="button"
+                  onClick={() => setPreviewOpen(true)}
+                  className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-academy-amber transition-colors hover:text-academy-amber/80"
+                >
+                  <ScrollText className="h-4 w-4" />
+                  Preview certificate
+                </button>
+              )}
             </div>
           </aside>
         </div>
@@ -364,6 +377,12 @@ export default function CourseDetailPage() {
           setApplyOpen(false)
           refetch()
         }}
+      />
+
+      <CertificatePreviewModal
+        courseId={previewOpen ? course.id : null}
+        courseTitle={course.title}
+        onClose={() => setPreviewOpen(false)}
       />
     </div>
   )

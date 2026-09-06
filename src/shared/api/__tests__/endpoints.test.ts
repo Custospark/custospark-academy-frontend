@@ -59,4 +59,12 @@ describe('course content endpoints', () => {
     expect(ENDPOINTS.CERTIFICATES.PDF(2)).toBe('/certificates/2/pdf')
     expect(ENDPOINTS.CERTIFICATES.DOWNLOAD(2)).toBe('/certificates/2/download')
   })
+
+  it('builds schedule and certificate preview URLs', () => {
+    expect(ENDPOINTS.SCHEDULES.MINE).toBe('/schedules/mine')
+    expect(ENDPOINTS.SCHEDULES.STORE(7)).toBe('/admin/courses/7/schedules')
+    expect(ENDPOINTS.SCHEDULES.UPDATE(7, 3)).toBe('/admin/courses/7/schedules/3')
+    expect(ENDPOINTS.SCHEDULES.DESTROY(7, 3)).toBe('/admin/courses/7/schedules/3')
+    expect(ENDPOINTS.CERTIFICATES.PREVIEW(7)).toBe('/courses/7/certificate-preview')
+  })
 })

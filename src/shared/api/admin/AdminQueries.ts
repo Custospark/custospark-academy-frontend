@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { axiosInstance } from '../../../app/api/axiosConfig'
 import { ENDPOINTS } from '../endpoints'
 import type { UserRole } from '../../types'
+import type { Course } from '../../types'
 
 export const adminKeys = {
   stats: ['admin', 'stats'] as const,
   users: ['admin', 'users'] as const,
   instructors: ['admin', 'instructors'] as const,
+  courses: ['admin', 'courses'] as const,
 }
 
 export interface PlatformStats {
@@ -40,6 +42,21 @@ export function usePlatformStats() {
     queryKey: adminKeys.stats,
     queryFn: async () => {
       const { data } = await axiosInstance.get<{ data: PlatformStats }>(ENDPOINTS.ADMIN.STATS)
+      return data.data
+    },
+  })
+}
+
+/**
+ * Course management listing: admins see every course, instructors only the
+ * ones they created. Includes per-course enrolment counters (enrollment_summary)
+ * and created_by for the management grid.
+ */
+export function useAdminCourses() {
+  return useQuery({
+    queryKey: adminKeys.courses,
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<ListResponse<Course>>(ENDPOINTS.ADMIN.COURSES.INDEX)
       return data.data
     },
   })

@@ -8,7 +8,9 @@ import type { CourseSchedule } from '../../types'
 export const miscKeys = {
   certificates: ['certificates', 'mine'] as const,
   certificatePdf: (certificateId: number) => ['certificates', 'pdf', certificateId] as const,
+  certificatePreview: (courseId: number) => ['certificates', 'preview', courseId] as const,
   schedules: ['schedules'] as const,
+  mySchedules: ['schedules', 'mine'] as const,
   adminEnrollments: ['admin', 'enrollments'] as const,
 }
 
@@ -70,6 +72,27 @@ export function useCertificatePdf(certificateId: number | null) {
   })
 }
 
+/**
+ * Fetches a course's watermarked certificate SAMPLE as a PDF blob. This is a
+ * preview only - the backend never creates a certificate record for it and the
+ * sheet is covered in a diagonal PREVIEW watermark, so nothing derived from the
+ * blob URL can pass as a real certificate.
+ */
+export function useCertificatePreview(courseId: number | null) {
+  return useQuery({
+    queryKey: miscKeys.certificatePreview(courseId ?? 0),
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<Blob>(
+        ENDPOINTS.CERTIFICATES.PREVIEW(courseId as number),
+        { responseType: 'blob' },
+      )
+      return data
+    },
+    enabled: courseId !== null && Number.isFinite(courseId) && courseId > 0,
+    staleTime: Infinity,
+  })
+}
+
 export function useCourseSchedules(courseId: number) {
   return useQuery({
     queryKey: [...miscKeys.schedules, courseId],
@@ -83,13 +106,76 @@ export function useCourseSchedules(courseId: number) {
   })
 }
 
-export function useAllSchedules() {
+/** Learner: all sessions across the courses they are actively enrolled in. */
+export function useMySchedules() {
   return useQuery({
-    queryKey: miscKeys.schedules,
+    queryKey: miscKeys.mySchedules,
     queryFn: async () => {
-      // Aggregate schedules across enrolled courses via their content.
-      const { data } = await axiosInstance.get<{ data: CourseSchedule[] }>(ENDPOINTS.ADMIN.CONTENT.FULL(0))
-      return data.data ?? []
+      const { data } = await axiosInstance.get<{ data: CourseSchedule[] }>(ENDPOINTS.SCHEDULES.MINE)
+      return data.data
+    },
+  })
+}
+
+export interface SchedulePayload {
+  title?: string
+  instructor_id?: number | null
+  starts_at?: string
+  ends_at?: string
+  location?: string | null
+  is_online?: boolean
+}
+
+export function useCreateSchedule() {
+  const queryClient = useQueryClient()
+
+  return useMutation<CourseSchedule, Error, { courseId: number; payload: SchedulePayload }>({
+    mutationFn: async ({ courseId, payload }) => {
+      const { data } = await axiosInstance.post<{ data: CourseSchedule }>(
+        ENDPOINTS.SCHEDULES.STORE(courseId),
+        payload,
+      )
+      return data.data
+    },
+    onSuccess: (_schedule, { courseId }) => {
+      queryClient.invalidateQueries({ queryKey: [...miscKeys.schedules, courseId] })
+      queryClient.invalidateQueries({ queryKey: miscKeys.mySchedules })
+    },
+  })
+}
+
+export function useUpdateSchedule() {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    CourseSchedule,
+    Error,
+    { courseId: number; scheduleId: number; payload: SchedulePayload }
+  >({
+    mutationFn: async ({ courseId, scheduleId, payload }) => {
+      const { data } = await axiosInstance.put<{ data: CourseSchedule }>(
+        ENDPOINTS.SCHEDULES.UPDATE(courseId, scheduleId),
+        payload,
+      )
+      return data.data
+    },
+    onSuccess: (_schedule, { courseId }) => {
+      queryClient.invalidateQueries({ queryKey: [...miscKeys.schedules, courseId] })
+      queryClient.invalidateQueries({ queryKey: miscKeys.mySchedules })
+    },
+  })
+}
+
+export function useDeleteSchedule() {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, { courseId: number; scheduleId: number }>({
+    mutationFn: async ({ courseId, scheduleId }) => {
+      await axiosInstance.delete(ENDPOINTS.SCHEDULES.DESTROY(courseId, scheduleId))
+    },
+    onSuccess: (_data, { courseId }) => {
+      queryClient.invalidateQueries({ queryKey: [...miscKeys.schedules, courseId] })
+      queryClient.invalidateQueries({ queryKey: miscKeys.mySchedules })
     },
   })
 }
@@ -100,19 +186,41 @@ export interface AdminEnrollment {
   course_title: string | null
   user_id: number
   user_name: string | null
+  user_email: string | null
   status: string
+  has_paid_application: boolean
+  has_paid_tuition: boolean
+  has_paid_certificate: boolean
   applied_at: string | null
   admitted_at: string | null
+  completed_at: string | null
+  certified_at: string | null
   application_review_note: string | null
 }
 
-export function useAdminEnrollments(filters?: { status?: string }) {
+export interface AdminEnrollmentFilters {
+  courseId?: number | null
+  status?: string
+  q?: string
+}
+
+export function useAdminEnrollments(filters?: AdminEnrollmentFilters) {
+  const params: Record<string, string> = {}
+  if (filters?.courseId && Number.isFinite(filters.courseId)) params.course_id = String(filters.courseId)
+  if (filters?.status) params.status = filters.status
+  if (filters?.q?.trim()) params.q = filters.q.trim()
+
   return useQuery({
-    queryKey: [...miscKeys.adminEnrollments, filters?.status ?? ''],
+    queryKey: [
+      ...miscKeys.adminEnrollments,
+      params.course_id ?? '',
+      params.status ?? '',
+      params.q ?? '',
+    ],
     queryFn: async () => {
       const { data } = await axiosInstance.get<{ data: AdminEnrollment[] }>(
         ENDPOINTS.ADMIN.ENROLLMENTS,
-        { params: filters?.status ? { status: filters.status } : undefined },
+        { params: Object.keys(params).length > 0 ? params : undefined },
       )
       return data.data
     },

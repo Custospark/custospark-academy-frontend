@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpen, Clock, Eye, GraduationCap, Layers, Target } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  Clock,
+  Eye,
+  GraduationCap,
+  Layers,
+  ScrollText,
+  Target,
+} from 'lucide-react'
 import { useCourses } from '../../shared/api/courses/CourseQueries'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { PageHeader } from '../../shared/components/layout/PageHeader'
@@ -8,6 +17,7 @@ import { SearchInput } from '../../shared/components/inputs/SearchInput'
 import { Button } from '../../shared/components/buttons/Button'
 import { EnrollmentActionButton, EnrollmentStatusBadge } from '../../shared/components/buttons/EnrollmentActionButton'
 import { ApplyModal } from '../../shared/components/modals/ApplyModal'
+import { CertificatePreviewModal } from '../../shared/components/certificates/CertificatePreviewModal'
 import { deliveryInfo } from '../../shared/utils/deliveryMode'
 import { enrollmentMatrix } from '../../shared/utils/enrollmentMatrix'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
@@ -34,6 +44,7 @@ export default function CatalogPage() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [applyCourse, setApplyCourse] = useState<Course | null>(null)
+  const [previewCourse, setPreviewCourse] = useState<Course | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const { data: courses, isPending, isError, refetch } = useCourses(search)
   const loading = isPending || (!courses && !isError)
@@ -184,13 +195,23 @@ export default function CatalogPage() {
                 )}
               </div>
 
-              <Link
-                to={ROUTES.APP.COURSE(course.id)}
-                className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 transition-colors hover:text-blue-200"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                View course details
-              </Link>
+              <div className="mt-4 flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
+                <Link
+                  to={ROUTES.APP.COURSE(course.id)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 transition-colors hover:text-blue-200"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Course details
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setPreviewCourse(course)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-academy-amber transition-colors hover:text-academy-amber/80"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  Preview certificate
+                </button>
+              </div>
             </article>
           )
         })}
@@ -203,6 +224,12 @@ export default function CatalogPage() {
         courseTitle={applyCourse?.title ?? ''}
         applicationFee={applyCourse ? applicationFee(applyCourse) : 0}
         onChanged={refresh}
+      />
+
+      <CertificatePreviewModal
+        courseId={previewCourse?.id ?? null}
+        courseTitle={previewCourse?.title ?? ''}
+        onClose={() => setPreviewCourse(null)}
       />
     </div>
   )

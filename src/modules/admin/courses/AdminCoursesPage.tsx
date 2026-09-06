@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, BookOpen, Library, Pencil, Plus } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarClock,
+  Library,
+  Pencil,
+  Plus,
+} from 'lucide-react'
 import { PageHeader } from '../../../shared/components/layout/PageHeader'
 import { AcademyLoader } from '../../../shared/components/loading/AcademyLoader'
 import { SearchInput } from '../../../shared/components/inputs/SearchInput'
 import { Button } from '../../../shared/components/buttons/Button'
 import { Input } from '../../../shared/components/inputs/Input'
 import { Modal } from '../../../shared/components/modals/Modal'
-import { useCourses } from '../../../shared/api/courses/CourseQueries'
+import { AdminScheduleManager } from '../../../shared/components/schedules/AdminScheduleManager'
+import { useAdminCourses } from '../../../shared/api/admin/AdminQueries'
 import { axiosInstance } from '../../../app/api/axiosConfig'
 import { ENDPOINTS } from '../../../shared/api/endpoints'
 import { apiErrorMessage } from '../../../shared/utils/apiError'
@@ -53,12 +61,13 @@ export default function AdminCoursesPage() {
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [editCourse, setEditCourse] = useState<Course | null>(null)
+  const [scheduleCourse, setScheduleCourse] = useState<Course | null>(null)
   const [form, setForm] = useState<CourseForm>(EMPTY_FORM)
   const [formError, setFormError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const navigate = useNavigate()
 
-  const { data: courses, isPending, isError, refetch } = useCourses()
+  const { data: courses, isPending, isError, refetch } = useAdminCourses()
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(searchInput.trim()), 300)
@@ -224,9 +233,39 @@ export default function AdminCoursesPage() {
               <p className="mt-2 line-clamp-2 flex-1 text-sm text-text-secondary">
                 {course.description}
               </p>
+              {course.enrollment_summary && (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="rounded-lg border border-border-subtle bg-surface-section px-2.5 py-2 text-center">
+                    <div className="font-display text-lg font-bold text-white">
+                      {course.enrollment_summary.enrolled}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-muted">Enrolled</div>
+                  </div>
+                  <div className="rounded-lg border border-border-subtle bg-surface-section px-2.5 py-2 text-center">
+                    <div className="font-display text-lg font-bold text-academy-teal">
+                      {course.enrollment_summary.tuition_paid}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-muted">Tuition paid</div>
+                  </div>
+                  <div className="rounded-lg border border-border-subtle bg-surface-section px-2.5 py-2 text-center">
+                    <div className="font-display text-lg font-bold text-blue-400">
+                      {course.enrollment_summary.certified}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wide text-text-muted">Certified</div>
+                  </div>
+                </div>
+              )}
               <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-4">
                 <span className="text-xs text-text-muted">{course.category ?? 'Uncategorized'}</span>
                 <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setScheduleCourse(course)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border-default px-2.5 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:border-border-strong hover:text-white"
+                  >
+                    <CalendarClock className="h-3 w-3" />
+                    Schedules
+                  </button>
                   <button
                     type="button"
                     onClick={() => openEdit(course)}
@@ -418,6 +457,12 @@ export default function AdminCoursesPage() {
           </div>
         </form>
       </Modal>
+
+      <AdminScheduleManager
+        courseId={scheduleCourse?.id ?? null}
+        courseTitle={scheduleCourse?.title ?? ''}
+        onClose={() => setScheduleCourse(null)}
+      />
     </div>
   )
 }
