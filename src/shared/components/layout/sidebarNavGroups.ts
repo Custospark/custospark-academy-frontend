@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Library,
   ShieldCheck,
+  UserRound,
   UserRoundCog,
   UserSquare2,
   Wallet,
@@ -54,6 +55,14 @@ export const sidebarNavGroups: SidebarNavGroup[] = [
     icon: Wallet,
     label: 'Payments',
     subItems: [{ to: ROUTES.APP.PAYMENTS, label: 'My Payments', icon: Wallet }],
+  },
+  {
+    icon: UserRound,
+    label: 'Account',
+    subItems: [
+      { to: ROUTES.APP.ACCOUNT.PROFILE, label: 'Profile', icon: UserRound },
+      { to: ROUTES.APP.ACCOUNT.SECURITY, label: 'Security', icon: ShieldCheck },
+    ],
   },
   {
     icon: ShieldCheck,

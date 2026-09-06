@@ -17,6 +17,7 @@ export type AcademyModule =
   | 'schedules'
   | 'payments'
   | 'certificates'
+  | 'account'
   | 'courseManagement'
   | 'enrollmentManagement'
   | 'instructorManagement'
@@ -30,6 +31,7 @@ export const MODULE_DEFAULT_ROUTES: Record<AcademyModule, string> = {
   schedules: ROUTES.APP.SCHEDULES,
   payments: ROUTES.APP.PAYMENTS,
   certificates: ROUTES.APP.CERTIFICATES,
+  account: ROUTES.APP.ACCOUNT.PROFILE,
   courseManagement: ROUTES.APP.ADMIN.COURSES,
   enrollmentManagement: ROUTES.APP.ADMIN.ENROLLMENTS,
   instructorManagement: ROUTES.APP.ADMIN.INSTRUCTORS,
@@ -44,6 +46,7 @@ export const MODULE_LABELS: Record<AcademyModule, string> = {
   schedules: 'Schedules',
   payments: 'My Payments',
   certificates: 'Certificates',
+  account: 'Account',
   courseManagement: 'Course Management',
   enrollmentManagement: 'Enrollments',
   instructorManagement: 'Instructors',
@@ -60,6 +63,7 @@ const ROLE_MODULES: Record<UserRole, AcademyModule[]> = {
     'schedules',
     'payments',
     'certificates',
+    'account',
   ],
   instructor: [
     'dashboard',
@@ -68,6 +72,7 @@ const ROLE_MODULES: Record<UserRole, AcademyModule[]> = {
     'schedules',
     'payments',
     'certificates',
+    'account',
     'courseManagement',
   ],
   admin: [
@@ -77,6 +82,7 @@ const ROLE_MODULES: Record<UserRole, AcademyModule[]> = {
     'schedules',
     'payments',
     'certificates',
+    'account',
     'courseManagement',
     'enrollmentManagement',
     'instructorManagement',

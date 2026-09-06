@@ -102,6 +102,58 @@ export function useRefreshUser() {
   })
 }
 
+export function useUpdateProfile() {
+  const dispatch = useAppDispatch()
+
+  return useMutation<AuthUser, Error, { name: string; phone?: string }>({
+    mutationFn: async (payload) => {
+      const { data } = await axiosInstance.put<{ data: AuthUser }>(
+        ENDPOINTS.ACCOUNT.PROFILE,
+        payload,
+      )
+      return data.data
+    },
+    onSuccess: (user) => {
+      dispatch(setUser(user))
+    },
+  })
+}
+
+export function useChangePassword() {
+  return useMutation<
+    { message: string },
+    Error,
+    { current_password: string; password: string; password_confirmation: string }
+  >({
+    mutationFn: async (payload) => {
+      const { data } = await axiosInstance.put<{ data: null; message: string }>(
+        ENDPOINTS.ACCOUNT.PASSWORD,
+        payload,
+      )
+      return { message: data.message }
+    },
+  })
+}
+
+export function useUploadAvatar() {
+  const dispatch = useAppDispatch()
+
+  return useMutation<AuthUser, Error, File>({
+    mutationFn: async (file) => {
+      const body = new FormData()
+      body.append('avatar', file)
+      const { data } = await axiosInstance.post<{ data: AuthUser }>(
+        ENDPOINTS.ACCOUNT.AVATAR,
+        body,
+      )
+      return data.data
+    },
+    onSuccess: (user) => {
+      dispatch(setUser(user))
+    },
+  })
+}
+
 export interface ForgotPasswordRequest {
   email: string
 }

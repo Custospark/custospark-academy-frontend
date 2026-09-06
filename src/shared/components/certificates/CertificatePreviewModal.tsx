@@ -66,8 +66,9 @@ export function CertificatePreviewModal({
       <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-academy-amber/30 bg-academy-amber/10 px-4 py-3 text-xs text-text-secondary">
         <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-academy-amber" />
         <p>
-          This is a watermarked sample of the certificate design. It is not a real certificate,
-          carries no registry reference or QR code, and cannot be downloaded from here. A verified
+          This is a watermarked sample of the certificate design, shown with your name exactly
+          as it will appear on the real thing. It is not a real certificate, carries no registry
+          reference or QR code, and cannot be downloaded from here. A verified
           certificate is issued only after you complete the course.
         </p>
       </div>

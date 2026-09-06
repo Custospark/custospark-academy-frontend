@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { CheckCircle2, GraduationCap } from 'lucide-react'
 import { Modal } from './Modal'
 import { Button } from '../buttons/Button'
-import { PaymentModal } from './PaymentModal'
+import { PaymentModalBody } from './PaymentModal'
 import { useApply } from '../../api/learner/LearnerCourseQueries'
 import { apiErrorMessage } from '../../utils/apiError'
+import { useToast } from '../../../app/contexts/useToast'
 
 interface ApplyModalProps {
   open: boolean
@@ -18,7 +19,9 @@ interface ApplyModalProps {
 
 /**
  * Enroll/apply modal. Confirms the application, creates the enrollment, then
- * opens the application-fee payment modal (state: applied -> application_fee_paid).
+ * swaps to the application-fee payment step INSIDE the same modal shell
+ * (state: applied -> application_fee_paid). One shell = no unmount/remount
+ * handoff flash between the apply and pay steps.
  */
 export function ApplyModal({
   open,
@@ -33,12 +36,15 @@ export function ApplyModal({
   const [error, setError] = useState<string | null>(null)
   const [enrollmentId, setEnrollmentId] = useState<number | null>(null)
   const [showPayment, setShowPayment] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const { showToast } = useToast()
 
   useEffect(() => {
     if (!open) {
       setError(null)
       setEnrollmentId(null)
       setShowPayment(false)
+      setBusy(false)
     }
   }, [open])
 
@@ -50,22 +56,54 @@ export function ApplyModal({
         onSuccess: (data) => {
           onChanged?.()
           if (applicationFee > 0) {
+            showToast('success', 'Application submitted. Complete the payment below.')
             setEnrollmentId(data.id)
             setShowPayment(true)
           } else {
             // Waived application fee: the backend auto-advances the enrollment
             // (application_fee_paid -> admitted -> tuition_paid). Nothing to pay.
+            showToast('success', 'Application submitted.')
             onClose()
           }
         },
-        onError: (err) => setError(apiErrorMessage(err, 'Could not apply.')),
+        onError: (err) => {
+          const message = apiErrorMessage(err, 'Could not apply.')
+          setError(message)
+          showToast('error', message)
+        },
       },
     )
   }
 
+  function handlePaid() {
+    setShowPayment(false)
+    onClose()
+    onChanged?.()
+  }
+
+  const payStep = showPayment && enrollmentId !== null
+
   return (
-    <>
-      <Modal open={open && !showPayment} onClose={onClose} title="Enroll in course" size="sm">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={payStep ? 'Make payment' : 'Enroll in course'}
+      size="sm"
+      showCloseButton={!busy && !apply.isPending}
+    >
+      {payStep ? (
+        <PaymentModalBody
+          enrollmentId={enrollmentId}
+          courseTitle={courseTitle}
+          feeType="application"
+          amount={applicationFee}
+          currency={currency}
+          active={open && showPayment}
+          onClose={onClose}
+          onPaid={handlePaid}
+          onBusyChange={setBusy}
+        />
+      ) : (
         <div className="space-y-5">
           <div className="rounded-xl border border-border-subtle bg-surface-section p-4">
             <div className="flex items-center gap-3">
@@ -109,27 +147,7 @@ export function ApplyModal({
             </Button>
           </div>
         </div>
-      </Modal>
-
-      {enrollmentId !== null && (
-        <PaymentModal
-          open={showPayment}
-          onClose={() => {
-            setShowPayment(false)
-            onClose()
-          }}
-          enrollmentId={enrollmentId}
-          courseTitle={courseTitle}
-          feeType="application"
-          amount={applicationFee}
-          currency={currency}
-          onPaid={() => {
-            setShowPayment(false)
-            onClose()
-            onChanged?.()
-          }}
-        />
       )}
-    </>
+    </Modal>
   )
 }

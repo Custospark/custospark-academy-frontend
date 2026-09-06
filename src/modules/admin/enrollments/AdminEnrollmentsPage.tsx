@@ -7,6 +7,8 @@ import { PageHeader } from '../../../shared/components/layout/PageHeader'
 import { Button } from '../../../shared/components/buttons/Button'
 import { ConfirmDialog } from '../../../shared/components/modals/ConfirmDialog'
 import { SearchInput } from '../../../shared/components/inputs/SearchInput'
+import { useToast } from '../../../app/contexts/useToast'
+import { apiErrorMessage } from '../../../shared/utils/apiError'
 
 const STATUS_STYLE: Record<string, string> = {
   applied: 'bg-blue-500/15 text-blue-300',
@@ -51,6 +53,7 @@ export default function AdminEnrollmentsPage() {
   })
   const updateStatus = useUpdateEnrollmentStatus(0)
   const [confirm, setConfirm] = useState<{ id: number; action: 'admit' | 'reject' } | null>(null)
+  const { showToast } = useToast()
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(searchInput.trim()), 300)
@@ -62,12 +65,19 @@ export default function AdminEnrollmentsPage() {
 
   function handleConfirm() {
     if (!confirm) return
+    const action = confirm.action
     updateStatus.mutate(
-      { id: confirm.id, action: confirm.action },
+      { id: confirm.id, action },
       {
-        onSettled: () => {
+        onSuccess: () => {
           setConfirm(null)
           refetch()
+          showToast('success', action === 'admit' ? 'Learner admitted.' : 'Application rejected.')
+        },
+        onError: (err) => {
+          // Keep the dialog open so the admin sees what failed and can retry.
+          refetch()
+          showToast('error', apiErrorMessage(err, `Could not ${action} this application.`))
         },
       },
     )

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
-import { BookOpen, Link2, Plus, Trash2, Video, File, FileText } from 'lucide-react'
+import { BookOpen, Download, Link2, Plus, Trash2, Video, File, FileText } from 'lucide-react'
 import type { CourseFull, ResourceItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
 import { Modal } from '../../../../shared/components/modals/Modal'
 import { useCreateResource, useDeleteResource } from '../../../../shared/api/courses/CourseContentQueries'
+import { storageUrl } from '../../../../shared/utils/storageUrl'
 
 const TYPE_ICON = { book: BookOpen, link: Link2, video: Video, file: File, article: FileText }
 const TYPE_LABELS: Record<string, string> = {
@@ -76,6 +77,7 @@ export function ResourcesTab({ course }: { course: CourseFull }) {
         <ul className="space-y-2">
           {resources.map((resource) => {
             const Icon = TYPE_ICON[resource.type] ?? Link2
+            const href = resource.url || storageUrl(resource.file_path)
             return (
               <li
                 key={resource.id}
@@ -90,6 +92,17 @@ export function ResourcesTab({ course }: { course: CourseFull }) {
                     {TYPE_LABELS[resource.type]} {resource.url ? `· ${resource.url}` : ''}
                   </div>
                 </div>
+                {href && (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-card-hover hover:text-white"
+                    aria-label={resource.url ? `Open ${resource.title}` : `Download ${resource.title}`}
+                  >
+                    {resource.url ? <Link2 className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={() => deleteResource.mutate(resource.id)}

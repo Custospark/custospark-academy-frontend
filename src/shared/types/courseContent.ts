@@ -84,6 +84,7 @@ export interface ExamItem {
   course_id: number
   title: string
   description: string | null
+  file_path: string | null
   max_score: number
   passing_score: number
   time_limit_minutes: number | null

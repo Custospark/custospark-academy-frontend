@@ -18,6 +18,8 @@ const PATH_TO_MODULE: Record<string, AcademyModule> = {
   [ROUTES.APP.SCHEDULES]: 'schedules',
   [ROUTES.APP.PAYMENTS]: 'payments',
   [ROUTES.APP.CERTIFICATES]: 'certificates',
+  [ROUTES.APP.ACCOUNT.PROFILE]: 'account',
+  [ROUTES.APP.ACCOUNT.SECURITY]: 'account',
   [ROUTES.APP.ADMIN.COURSES]: 'courseManagement',
   [ROUTES.APP.ADMIN.ENROLLMENTS]: 'enrollmentManagement',
 }
@@ -77,11 +79,17 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           aria-haspopup="menu"
           aria-expanded={menuOpen}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 text-sm font-bold text-blue-300">
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="h-full w-full rounded-lg object-cover" />
-            ) : (
-              initials
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-blue-500/15 text-sm font-bold text-blue-300">
+            {initials}
+            {user?.avatar_url && (
+              <img
+                src={user.avatar_url}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
             )}
           </div>
           <div className="hidden text-left sm:block">
@@ -103,8 +111,25 @@ export function Navbar({ onMenuClick }: NavbarProps) {
             className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border-subtle bg-surface-elevated shadow-2xl"
           >
             <div className="border-b border-border-subtle px-4 py-3">
-              <div className="truncate text-sm font-semibold text-white">{user?.name}</div>
-              <div className="mt-0.5 truncate text-xs text-text-muted">{user?.email}</div>
+              <div className="flex items-center gap-3">
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-500/15 text-sm font-bold text-blue-300">
+                  {initials}
+                  {user?.avatar_url && (
+                    <img
+                      src={user.avatar_url}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-white">{user?.name}</div>
+                  <div className="mt-0.5 truncate text-xs text-text-muted">{user?.email}</div>
+                </div>
+              </div>
             </div>
             <div className="p-1.5">
               <button
@@ -112,7 +137,19 @@ export function Navbar({ onMenuClick }: NavbarProps) {
                 role="menuitem"
                 onClick={() => {
                   setMenuOpen(false)
-                  navigate('/app/catalog')
+                  navigate(ROUTES.APP.ACCOUNT.PROFILE)
+                }}
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-card hover:text-white"
+              >
+                <UserRound className="h-4 w-4" />
+                Profile
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
+                  navigate(ROUTES.APP.CATALOG)
                 }}
                 className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-card hover:text-white"
               >

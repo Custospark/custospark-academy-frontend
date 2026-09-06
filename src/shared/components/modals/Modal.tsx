@@ -1,4 +1,5 @@
-import { type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { cn } from '../../utils/cn'
@@ -22,6 +23,8 @@ const SIZES = {
 
 /**
  * Academy modal shell - navy surface card over a dimmed backdrop.
+ * Rendered in a portal on document.body so `fixed` centering can never be
+ * skewed by an ancestor transform/filter, and stacked modals share one layer.
  */
 export function Modal({
   open,
@@ -33,10 +36,25 @@ export function Modal({
   panelClassName,
   showCloseButton = true,
 }: ModalProps) {
-  return (
+  // Esc closes; background page never scrolls under an open modal.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [open, onClose])
+
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -82,6 +100,7 @@ export function Modal({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

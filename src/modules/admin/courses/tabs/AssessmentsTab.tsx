@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { FileQuestion, Plus, Trash2, ClipboardCheck, BookMarked } from 'lucide-react'
+import { FileQuestion, FileUp, Plus, Trash2, ClipboardCheck, BookMarked, FileCheck2 } from 'lucide-react'
 import type { CourseFull, QuestionItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
@@ -43,6 +43,8 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
   const [title, setTitle] = useState('')
   const [passing, setPassing] = useState('50')
   const [questions, setQuestions] = useState<DraftQuestion[]>([{ ...EMPTY_QUESTION }])
+  const [examFile, setExamFile] = useState<File | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const creators: Record<Kind, (payload: Record<string, unknown>) => void> = {
     quiz: (p) => createQuiz.mutate(p as never, { onSuccess: resetAndClose }),
@@ -61,11 +63,14 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
     setTitle('')
     setPassing('50')
     setQuestions([{ ...EMPTY_QUESTION }])
+    setExamFile(null)
+    setFormError(null)
   }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!kind || !title.trim()) return
+    setFormError(null)
     const cleanQuestions = questions
       .filter((q) => q.question.trim() !== '')
       .map((q): Partial<QuestionItem> => ({
@@ -75,11 +80,17 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
         correct_answer: q.correct_answer.trim() || null,
         points: Number(q.points) || 1,
       }))
+    // An exam may be a paper file, typed questions, or both - but never neither.
+    if (kind === 'exam' && cleanQuestions.length === 0 && !examFile) {
+      setFormError('Attach an exam paper file or add at least one typed question.')
+      return
+    }
     creators[kind]({
       title: title.trim(),
       passing_score: Number(passing) || 50,
       max_score: 100,
       questions: cleanQuestions,
+      ...(kind === 'exam' && examFile ? { file: examFile } : {}),
     })
   }
 
@@ -125,8 +136,16 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="truncate font-medium text-white">{item.title}</div>
-                        <div className="text-xs text-text-muted">
-                          {item.questions.length} questions · passing {item.passing_score}%
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
+                          <span>
+                            {item.questions.length} questions · passing {item.passing_score}%
+                          </span>
+                          {k === 'exam' && 'file_path' in item && item.file_path && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 font-medium text-blue-300">
+                              <FileCheck2 className="h-3 w-3" />
+                              Paper attached
+                            </span>
+                          )}
                         </div>
                       </div>
                       <button
@@ -148,6 +167,11 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
 
       <Modal open={kind !== null} onClose={resetAndClose} title={`Add ${kind ?? 'assessment'}`} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {formError && (
+            <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+              {formError}
+            </p>
+          )}
           <Input
             label="Title"
             value={title}
@@ -155,6 +179,27 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
             required
             placeholder={kind === 'quiz' ? 'e.g. Module 1 Quiz' : kind === 'exercise' ? 'e.g. Practice Problem Set' : 'e.g. Final Exam'}
           />
+          {kind === 'exam' && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+                Exam paper (PDF/file, optional)
+              </label>
+              <div className="flex items-center gap-3 rounded-xl border border-border-default bg-surface-card px-4 py-3">
+                <FileUp className="h-5 w-5 shrink-0 text-blue-300" />
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                  onChange={(e) => setExamFile(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
+                />
+              </div>
+              <p className="mt-1.5 text-xs text-text-muted">
+                {examFile
+                  ? `Selected: ${examFile.name}`
+                  : 'Learners download the paper, then upload their answer script. Combine with typed questions or use the paper alone.'}
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Passing score (%)"

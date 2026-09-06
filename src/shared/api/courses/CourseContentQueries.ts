@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { axiosInstance } from '../../../app/api/axiosConfig'
+import { imperativeToast } from '../../../app/contexts/imperativeToast'
+import { apiErrorMessage } from '../../utils/apiError'
 import { ENDPOINTS } from '../endpoints'
 import type {
   CourseFull,
@@ -76,6 +78,28 @@ function useContentMutation<TInput, TOutput>(
       if (invalidate) {
         queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) })
       }
+      imperativeToast.show('success', 'Saved.')
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not save changes.'))
+    },
+  })
+}
+
+/** Generic delete mutation: invalidates the builder + confirms via toast. */
+function useDeleteContent(courseId: number, destroy: (courseId: number, id: number) => string) {
+  const queryClient = useQueryClient()
+  return useMutation<{ message: string }, Error, number>({
+    mutationFn: async (id) => {
+      const { data } = await axiosInstance.delete(destroy(courseId, id))
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) })
+      imperativeToast.show('success', 'Removed.')
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not remove.'))
     },
   })
 }
@@ -95,16 +119,7 @@ export function useUpdateSection(courseId: number) {
 }
 
 export function useDeleteSection(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.SECTIONS.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.SECTIONS.DESTROY)
 }
 
 export function useCreateLesson(courseId: number) {
@@ -122,16 +137,7 @@ export function useUpdateLesson(courseId: number) {
 }
 
 export function useDeleteLesson(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.LESSONS.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.LESSONS.DESTROY)
 }
 
 export function useCreateOutcome(courseId: number) {
@@ -142,16 +148,7 @@ export function useCreateOutcome(courseId: number) {
 }
 
 export function useDeleteOutcome(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.OUTCOMES.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.OUTCOMES.DESTROY)
 }
 
 export function useCreateResource(courseId: number) {
@@ -162,16 +159,7 @@ export function useCreateResource(courseId: number) {
 }
 
 export function useDeleteResource(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.RESOURCES.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.RESOURCES.DESTROY)
 }
 
 export function useCreateQuiz(courseId: number) {
@@ -182,16 +170,7 @@ export function useCreateQuiz(courseId: number) {
 }
 
 export function useDeleteQuiz(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.QUIZZES.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.QUIZZES.DESTROY)
 }
 
 export function useCreateExercise(courseId: number) {
@@ -202,16 +181,7 @@ export function useCreateExercise(courseId: number) {
 }
 
 export function useDeleteExercise(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.EXERCISES.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.EXERCISES.DESTROY)
 }
 
 export function useCreateExam(courseId: number) {
@@ -222,16 +192,7 @@ export function useCreateExam(courseId: number) {
 }
 
 export function useDeleteExam(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.EXAMS.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.EXAMS.DESTROY)
 }
 
 export function useCreateAssignment(courseId: number) {
@@ -242,14 +203,5 @@ export function useCreateAssignment(courseId: number) {
 }
 
 export function useDeleteAssignment(courseId: number) {
-  const queryClient = useQueryClient()
-  return useMutation<{ message: string }, Error, number>({
-    mutationFn: async (id) => {
-      const { data } = await axiosInstance.delete(
-        ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.DESTROY(courseId, id),
-      )
-      return data
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) }),
-  })
+  return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.DESTROY)
 }

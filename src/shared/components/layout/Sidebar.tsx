@@ -32,6 +32,8 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
     [ROUTES.APP.SCHEDULES]: 'schedules',
     [ROUTES.APP.PAYMENTS]: 'payments',
     [ROUTES.APP.CERTIFICATES]: 'certificates',
+    [ROUTES.APP.ACCOUNT.PROFILE]: 'account',
+    [ROUTES.APP.ACCOUNT.SECURITY]: 'account',
     [ROUTES.APP.ADMIN.COURSES]: 'courseManagement',
     [ROUTES.APP.ADMIN.ENROLLMENTS]: 'enrollmentManagement',
     [ROUTES.APP.ADMIN.INSTRUCTORS]: 'instructorManagement',
@@ -39,12 +41,15 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
     [ROUTES.APP.ADMIN.PERMISSIONS]: 'userPermissions',
   }
 
-  const groups = sidebarNavGroups.map((group) => ({
-    ...group,
-    subItems: group.subItems.filter(
-      (item) => itemToModule[item.to] && allowedModules.has(itemToModule[item.to]),
-    ),
-  }))
+  const groups = sidebarNavGroups
+    .map((group) => ({
+      ...group,
+      subItems: group.subItems.filter(
+        (item) => itemToModule[item.to] && allowedModules.has(itemToModule[item.to]),
+      ),
+    }))
+    // Never render an empty group label (e.g. Administration for learners).
+    .filter((group) => group.subItems.length > 0)
 
   const sidebarContent = (
     <div className="flex h-full flex-col">

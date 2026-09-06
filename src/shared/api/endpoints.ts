@@ -12,6 +12,11 @@ export const ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
   },
+  ACCOUNT: {
+    PROFILE: '/account/profile',
+    PASSWORD: '/account/password',
+    AVATAR: '/account/avatar',
+  },
   COURSES: {
     INDEX: '/courses',
     SHOW: (id: number) => `/courses/${id}`,

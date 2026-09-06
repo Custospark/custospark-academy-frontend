@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { CheckCircle2, FileQuestion, XCircle } from 'lucide-react'
+import { CheckCircle2, Download, FileQuestion, FileUp, XCircle } from 'lucide-react'
 import type { LearnerCourse, LearnerQuestion, LearnerQuiz, LearnerExercise, LearnerExam } from '../../shared/types/learnerCourse'
 import { Button } from '../../shared/components/buttons/Button'
 import { Modal } from '../../shared/components/modals/Modal'
 import { useSubmitAttempt, useSubmitWork } from '../../shared/api/learner/LearnerCourseQueries'
+import { useToast } from '../../app/contexts/useToast'
+import { apiErrorMessage } from '../../shared/utils/apiError'
+import { storageUrl } from '../../shared/utils/storageUrl'
 import { cn } from '../../shared/utils/cn'
 
 export function AssessmentsSection({ course, courseId }: { course: LearnerCourse; courseId: number }) {
@@ -23,7 +26,13 @@ export function AssessmentsSection({ course, courseId }: { course: LearnerCourse
       />
       <AssessmentGroup
         title="Exams"
-        items={course.exams.map((x) => ({ id: x.id, title: x.title, meta: `${x.questions.length} questions` }))}
+        items={course.exams.map((x) => ({
+          id: x.id,
+          title: x.title,
+          meta: x.file_path
+            ? `${x.questions.length} questions · paper attached`
+            : `${x.questions.length} questions`,
+        }))}
         onOpen={(id) => setActive({ kind: 'exam', exam: course.exams.find((x) => x.id === id) })}
       />
 
@@ -99,25 +108,46 @@ function AttemptModal({
   const submitAttempt = useSubmitAttempt(courseId)
   const submitWork = useSubmitWork(courseId)
   const [answers, setAnswers] = useState<Record<number, string>>({})
+  const [answerFile, setAnswerFile] = useState<File | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [result, setResult] = useState<{ score: number; max_score: number; is_passed: boolean } | null>(null)
+  const [examSubmitted, setExamSubmitted] = useState(false)
+  const { showToast } = useToast()
 
   const assessment = quiz ?? exercise ?? exam
   const title = assessment?.title ?? ''
   const questions: LearnerQuestion[] = assessment?.questions ?? []
   const maxScore = questions.reduce((sum, q) => sum + q.points, 0)
+  const examPaperUrl = kind === 'exam' ? storageUrl(exam?.file_path) : null
+  const examNeedsFile = kind === 'exam' && questions.length === 0
 
   function handleSubmit() {
     if (!assessment || submitAttempt.isPending || submitWork.isPending) return
+    setSubmitError(null)
     if (kind === 'exam') {
       // Exams are graded by an instructor via the submission endpoint.
+      // Paper-only exams require an uploaded answer script.
+      if (examNeedsFile && !answerFile) {
+        setSubmitError('Upload your answer script to submit this exam.')
+        return
+      }
       submitWork.mutate(
         {
           type: 'exam',
           typeId: assessment.id,
           content: JSON.stringify(answers),
+          file: answerFile ?? undefined,
         },
         {
-          onSuccess: () => setResult({ score: 0, max_score: maxScore, is_passed: false }),
+          onSuccess: () => {
+            setExamSubmitted(true)
+            showToast('success', 'Exam submitted for grading.')
+          },
+          onError: (err) => {
+            const message = apiErrorMessage(err, 'Could not submit your exam.')
+            setSubmitError(message)
+            showToast('error', message)
+          },
         },
       )
       return
@@ -126,13 +156,29 @@ function AttemptModal({
       { type: kind, typeId: assessment.id, answers },
       {
         onSuccess: (data) => setResult(data),
+        onError: (err) => {
+          const message = apiErrorMessage(err, 'Could not submit your answers.')
+          setSubmitError(message)
+          showToast('error', message)
+        },
       },
     )
   }
 
   return (
     <Modal open onClose={onClose} title={title} size="lg" showCloseButton={!submitAttempt.isPending}>
-      {result ? (
+      {examSubmitted ? (
+        <div className="py-4 text-center">
+          <CheckCircle2 className="mx-auto h-12 w-12 text-semantic-success" />
+          <h3 className="mt-4 text-lg font-bold text-white">Exam submitted</h3>
+          <p className="mt-1.5 text-sm text-text-secondary">
+            Your answers are with the instructor for grading. You will see your score here once graded.
+          </p>
+          <Button className="mt-5" onClick={onClose}>
+            Done
+          </Button>
+        </div>
+      ) : result ? (
         <div className="text-center">
           <div
             className={cn(
@@ -155,8 +201,21 @@ function AttemptModal({
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-text-secondary">
-            Answer each question below. {kind === 'exam' ? 'Your exam will be graded by an instructor.' : 'Auto-graded on submit.'}
+            {questions.length > 0
+              ? <>Answer each question below. {kind === 'exam' ? 'Your exam will be graded by an instructor.' : 'Auto-graded on submit.'}</>
+              : 'This exam is a paper file - download it, complete it, then upload your answer script.'}
           </p>
+          {examPaperUrl && (
+            <a
+              href={examPaperUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-xl border border-blue-500/40 bg-blue-500/10 px-4 py-3 transition-colors hover:border-blue-500"
+            >
+              <Download className="h-5 w-5 shrink-0 text-blue-300" />
+              <span className="text-sm font-medium text-white">Download exam paper</span>
+            </a>
+          )}
           {questions.map((q, index) => (
             <div key={q.id} className="rounded-xl border border-border-subtle bg-surface-section p-4">
               <div className="text-sm font-medium text-white">
@@ -192,6 +251,30 @@ function AttemptModal({
               </div>
             </div>
           ))}
+          {kind === 'exam' && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+                Upload answer script{examNeedsFile ? ' (required)' : ' (optional)'}
+              </label>
+              <div className="flex items-center gap-3 rounded-xl border border-border-default bg-surface-card px-4 py-3">
+                <FileUp className="h-5 w-5 shrink-0 text-blue-300" />
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                  onChange={(e) => setAnswerFile(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
+                />
+              </div>
+              {answerFile && (
+                <p className="mt-1.5 text-xs text-text-muted">Selected: {answerFile.name}</p>
+              )}
+            </div>
+          )}
+          {submitError && (
+            <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+              {submitError}
+            </p>
+          )}
           <div className="flex items-center justify-between border-t border-border-subtle pt-4">
             <span className="text-xs text-text-muted">Total: {maxScore} pts</span>
             <div className="flex gap-3">

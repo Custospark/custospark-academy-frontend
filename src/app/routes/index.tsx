@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { PublicRoute } from './PublicRoute'
 import { AuthMiddlewareRoute } from './middleware/AuthMiddlewareRoute'
 import { RoleAccessMiddleware } from './middleware/RoleAccessMiddleware'
@@ -30,6 +30,8 @@ const AdminEnrollmentsPage = lazy(() => import('../../modules/admin/enrollments/
 const InstructorManagementPage = lazy(() => import('../../modules/admin/instructors/InstructorManagementPage'))
 const PlatformStatsPage = lazy(() => import('../../modules/admin/stats/PlatformStatsPage'))
 const PermissionsPage = lazy(() => import('../../modules/admin/permissions/PermissionsPage'))
+const ProfilePage = lazy(() => import('../../modules/account/ProfilePage'))
+const SecurityPage = lazy(() => import('../../modules/account/SecurityPage'))
 
 function withSuspense(node: React.ReactNode) {
   return <Suspense fallback={<AcademyLoader fullPage />}>{node}</Suspense>
@@ -59,17 +61,19 @@ export function AppRoutes() {
           <Route path={ROUTES.APP.CATALOG} element={withSuspense(<CatalogPage />)} />
           <Route path={ROUTES.APP.COURSE(':id')} element={withSuspense(<CourseDetailPage />)} />
           <Route path={ROUTES.APP.MY_COURSES} element={withSuspense(<MyCoursesPage />)} />
-          <Route path="app/my-courses/:id" element={withSuspense(<MyCourseDetailPage />)} />
+          <Route path="my-courses/:id" element={withSuspense(<MyCourseDetailPage />)} />
           <Route path={ROUTES.APP.SCHEDULES} element={withSuspense(<SchedulesPage />)} />
           <Route path={ROUTES.APP.PAYMENTS} element={withSuspense(<PaymentsPage />)} />
           <Route path={ROUTES.APP.CERTIFICATES} element={withSuspense(<CertificatesPage />)} />
+          <Route path={ROUTES.APP.ACCOUNT.PROFILE} element={withSuspense(<ProfilePage />)} />
+          <Route path={ROUTES.APP.ACCOUNT.SECURITY} element={withSuspense(<SecurityPage />)} />
         </Route>
 
 {/* Instructor/admin: course management */}
       <Route element={<RoleAccessMiddleware module="courseManagement" />}>
         <Route element={withSuspense(<AppLayout />)}>
           <Route path={ROUTES.APP.ADMIN.COURSES} element={withSuspense(<AdminCoursesPage />)} />
-          <Route path="app/admin/courses/:id" element={withSuspense(<CourseBuilderPage />)} />
+          <Route path={ROUTES.APP.ADMIN.COURSE(':id')} element={withSuspense(<CourseBuilderPage />)} />
         </Route>
       </Route>
 
@@ -83,6 +87,9 @@ export function AppRoutes() {
         </Route>
       </Route>
       </Route>
+
+      {/* Unknown paths (incl. hard-refresh on a removed route) land home, never blank. */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

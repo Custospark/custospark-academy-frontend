@@ -1,5 +1,6 @@
-import { BookOpen, File, FileText, Link2, Video } from 'lucide-react'
+import { BookOpen, Download, File, FileText, Link2, Video } from 'lucide-react'
 import type { LearnerCourse, LearnerResource } from '../../shared/types/learnerCourse'
+import { storageUrl } from '../../shared/utils/storageUrl'
 
 const TYPE_ICON = { book: BookOpen, link: Link2, video: Video, file: File, article: FileText }
 const TYPE_LABELS: Record<string, string> = {
@@ -33,15 +34,14 @@ export function ResourcesSection({ course }: { course: LearnerCourse }) {
 
 function ResourceRow({ resource }: { resource: LearnerResource }) {
   const Icon = TYPE_ICON[resource.type as keyof typeof TYPE_ICON] ?? Link2
-  const href = resource.url || (resource.file_path ? `/storage/${resource.file_path}` : null)
+  // Uploaded files live on the API domain's public disk - never relative.
+  const href = resource.url || storageUrl(resource.file_path)
+  const isFile = !resource.url && !!resource.file_path
 
   return (
-    <a
-      href={href ?? '#'}
-      target={resource.url ? '_blank' : undefined}
-      rel="noopener noreferrer"
+    <div
       className={`flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-card px-4 py-3 transition-colors ${
-        href ? 'hover:border-border-strong' : 'pointer-events-none'
+        href ? 'hover:border-border-strong' : ''
       }`}
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-blue-300">
@@ -54,6 +54,19 @@ function ResourceRow({ resource }: { resource: LearnerResource }) {
           {resource.description ? ` · ${resource.description}` : ''}
         </div>
       </div>
-    </a>
+      {href && (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          download={isFile || undefined}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border-default px-2.5 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:border-border-strong hover:text-white"
+          aria-label={isFile ? `Download ${resource.title}` : `Open ${resource.title}`}
+        >
+          {isFile ? <Download className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+          {isFile ? 'Download' : 'Open'}
+        </a>
+      )}
+    </div>
   )
 }

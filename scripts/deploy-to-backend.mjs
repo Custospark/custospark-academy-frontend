@@ -8,8 +8,11 @@
  *   staging      → Backend/public/staging     (build --mode staging, .env.staging API)
  *   production   → Backend/public/production  (build mode production, .env.production API)
  *
- * The asset base is relative (./) so the app works whether the server serves
- * the folder from a subdomain docroot (academy.custospark.com) or a subpath.
+ * The asset base is absolute (/) because the app is always served from a
+ * subdomain docroot (academy.custospark.com). A relative base (./) breaks
+ * every deep-route refresh: the browser resolves ./assets/... against
+ * /app/... so Apache serves index.html as JS (text/html) and React never
+ * boots (white screen).
  *
  * Each target is built, copied, then committed + pushed to GitHub. Only the
  * backend repo carries the deploy (the fresh build under public/{target}); the
@@ -113,7 +116,7 @@ for (const target of targets) {
 
   step('Build frontend');
   const mode = target === 'staging' ? '--mode staging' : '--mode production';
-  run(`tsc -b && vite build ${mode} --base ./ --outDir dist/web`, FRONTEND_ROOT);
+  run(`npx --no-install tsc -b && npx --no-install vite build ${mode} --base / --outDir dist/web`, FRONTEND_ROOT);
 
   if (!existsSync(DIST)) {
     console.error('Build did not produce dist/web - aborting.');
