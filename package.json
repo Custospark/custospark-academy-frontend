@@ -9,6 +9,11 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test:unit": "vitest run",
+    "build:web": "node scripts/deploy-to-backend.mjs all",
+    "build:web:staging": "node scripts/deploy-to-backend.mjs staging",
+    "build:web:production": "node scripts/deploy-to-backend.mjs production",
+    "deploy:web:staging": "node scripts/deploy-to-backend.mjs staging",
+    "deploy:web:production": "node scripts/deploy-to-backend.mjs production",
     "vera:fast": "node scripts/vera-fast.mjs"
   },
   "dependencies": {
