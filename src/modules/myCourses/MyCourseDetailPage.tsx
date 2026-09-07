@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Award,
   BookOpen,
+  ChartColumn,
   CheckCircle2,
   ClipboardList,
   FileQuestion,
@@ -22,6 +23,7 @@ import { CurriculumPlayer } from './CurriculumPlayer'
 import { ResourcesSection } from './ResourcesSection'
 import { AssessmentsSection } from './AssessmentsSection'
 import { AssignmentsSection } from './AssignmentsSection'
+import { PerformanceSection } from './PerformanceSection'
 import { CompletionCard } from './CompletionCard'
 
 const TABS = [
@@ -29,20 +31,21 @@ const TABS = [
   { id: 'resources', label: 'Resources', icon: BookOpen },
   { id: 'assessments', label: 'Assessments', icon: FileQuestion },
   { id: 'assignments', label: 'Assignments', icon: ClipboardList },
+  { id: 'performance', label: 'My Performance', icon: ChartColumn },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
 
 export default function MyCourseDetailPage() {
-  const { id } = useParams<{ id: string }>()
-  const courseId = Number(id)
-  const { data: course, isPending, isError } = useLearnerCourse(courseId)
-  const { data: progress } = useLearnerProgress(courseId)
+  const { slug } = useParams<{ slug: string }>()
+  const courseSlug = slug ?? ''
+  const { data: course, isPending, isError } = useLearnerCourse(courseSlug)
+  const { data: progress } = useLearnerProgress(courseSlug)
   const { data: enrollments } = useMyEnrollments()
-  const enrollment = enrollments?.find((e) => e.course_id === courseId)
+  const enrollment = enrollments?.find((e) => e.course_slug === courseSlug || e.course_id === Number(courseSlug))
   const [activeTab, setActiveTab] = useState<TabId>('curriculum')
 
-  if (!Number.isFinite(courseId)) {
+  if (!courseSlug) {
     return (
       <div className="rounded-2xl border border-semantic-error/40 bg-semantic-error/10 p-10 text-center">
         <p className="text-sm text-semantic-error">Course not found.</p>
@@ -151,10 +154,11 @@ export default function MyCourseDetailPage() {
             ))}
           </div>
 
-          {activeTab === 'curriculum' && <CurriculumPlayer course={course} courseId={courseId} />}
+          {activeTab === 'curriculum' && <CurriculumPlayer course={course} courseId={courseSlug} />}
           {activeTab === 'resources' && <ResourcesSection course={course} />}
-          {activeTab === 'assessments' && <AssessmentsSection course={course} courseId={courseId} />}
-          {activeTab === 'assignments' && <AssignmentsSection course={course} courseId={courseId} />}
+          {activeTab === 'assessments' && <AssessmentsSection course={course} courseId={courseSlug} />}
+          {activeTab === 'assignments' && <AssignmentsSection course={course} courseId={courseSlug} />}
+          {activeTab === 'performance' && <PerformanceSection course={course} />}
         </>
       )}
 

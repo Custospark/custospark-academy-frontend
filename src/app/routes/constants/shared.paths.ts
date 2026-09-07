@@ -16,9 +16,9 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   APP: {
     CATALOG: '/catalog',
-    COURSE: (id: number | string) => `/catalog/${id}`,
+    COURSE: (slug: string) => `/catalog/${slug}`,
     MY_COURSES: '/my-courses',
-    MY_COURSE: (id: number | string) => `/my-courses/${id}`,
+    MY_COURSE: (slug: string) => `/my-courses/${slug}`,
     PAYMENTS: '/payments',
     CERTIFICATES: '/certificates',
     SCHEDULES: '/schedules',
@@ -28,7 +28,7 @@ export const ROUTES = {
     },
     ADMIN: {
       COURSES: '/admin/courses',
-      COURSE: (id: number | string) => `/admin/courses/${id}`,
+      COURSE: (slug: string) => `/admin/courses/${slug}`,
       ENROLLMENTS: '/admin/enrollments',
       INSTRUCTORS: '/admin/instructors',
       STATS: '/admin/stats',

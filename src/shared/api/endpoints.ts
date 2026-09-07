@@ -19,15 +19,15 @@ export const ENDPOINTS = {
   },
   COURSES: {
     INDEX: '/courses',
-    SHOW: (id: number) => `/courses/${id}`,
-    SCHEDULES: (id: number) => `/courses/${id}/schedules`,
+    SHOW: (id: number | string) => `/courses/${id}`,
+    SCHEDULES: (id: number | string) => `/courses/${id}/schedules`,
   },
   SCHEDULES: {
     MINE: '/schedules/mine',
-    STORE: (courseId: number) => `/admin/courses/${courseId}/schedules`,
-    UPDATE: (courseId: number, scheduleId: number) =>
+    STORE: (courseId: string) => `/admin/courses/${courseId}/schedules`,
+    UPDATE: (courseId: string, scheduleId: number) =>
       `/admin/courses/${courseId}/schedules/${scheduleId}`,
-    DESTROY: (courseId: number, scheduleId: number) =>
+    DESTROY: (courseId: string, scheduleId: number) =>
       `/admin/courses/${courseId}/schedules/${scheduleId}`,
   },
   ENROLLMENTS: {
@@ -43,11 +43,11 @@ export const ENDPOINTS = {
     RECEIPT: (id: number) => `/payments/${id}/receipt`,
   },
   LEARNER: {
-    CONTENT: (courseId: number) => `/courses/${courseId}/content`,
-    PROGRESS: (courseId: number) => `/courses/${courseId}/progress`,
-    MARK_LESSON: (courseId: number, lessonId: number) => `/courses/${courseId}/lessons/${lessonId}/progress`,
-    SUBMIT: (courseId: number, type: string, typeId: number) => `/courses/${courseId}/submit/${type}/${typeId}`,
-    ATTEMPT: (courseId: number, type: string, typeId: number) => `/courses/${courseId}/attempt/${type}/${typeId}`,
+    CONTENT: (courseId: string) => `/courses/${courseId}/content`,
+    PROGRESS: (courseId: string) => `/courses/${courseId}/progress`,
+    MARK_LESSON: (courseId: string, lessonId: number) => `/courses/${courseId}/lessons/${lessonId}/progress`,
+    SUBMIT: (courseId: string, type: string, typeId: number) => `/courses/${courseId}/submit/${type}/${typeId}`,
+    ATTEMPT: (courseId: string, type: string, typeId: number) => `/courses/${courseId}/attempt/${type}/${typeId}`,
   },
   CERTIFICATES: {
     MINE: '/certificates/mine',
@@ -55,7 +55,7 @@ export const ENDPOINTS = {
     SHOW: (id: number) => `/certificates/${id}`,
     PDF: (id: number) => `/certificates/${id}/pdf`,
     DOWNLOAD: (id: number) => `/certificates/${id}/download`,
-    PREVIEW: (courseId: number) => `/courses/${courseId}/certificate-preview`,
+    PREVIEW: (courseId: string) => `/courses/${courseId}/certificate-preview`,
   },
   ADMIN: {
     COURSES: {
@@ -67,6 +67,8 @@ export const ENDPOINTS = {
     ENROLLMENTS: '/admin/enrollments',
     ADMIT: (id: number) => `/admin/enrollments/${id}/admit`,
     REJECT: (id: number) => `/admin/enrollments/${id}/reject`,
+    ANNOUNCE: (courseId: string) => `/admin/courses/${courseId}/announce`,
+    EXPORT_LEARNERS: (courseId: string) => `/admin/courses/${courseId}/learners/export`,
     INSTRUCTORS: {
       INDEX: '/admin/instructors',
       STORE: '/admin/instructors',
@@ -79,45 +81,52 @@ export const ENDPOINTS = {
       UPDATE: (id: number) => `/admin/users/${id}`,
     },
     CONTENT: {
-      FULL: (courseId: number) => `/admin/courses/${courseId}/content`,
+      FULL: (courseId: string) => `/admin/courses/${courseId}/content`,
       SECTIONS: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/sections`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/sections/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/sections/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/sections`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/sections/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/sections/${id}`,
       },
       LESSONS: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/lessons`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/lessons/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/lessons/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/lessons`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/lessons/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/lessons/${id}`,
       },
       OUTCOMES: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/outcomes`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/outcomes/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/outcomes`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/outcomes/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/outcomes/${id}`,
       },
       RESOURCES: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/resources`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/resources/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/resources/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/resources`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/resources/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/resources/${id}`,
       },
       QUIZZES: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/quizzes`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/quizzes/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/quizzes/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/quizzes`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/quizzes/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/quizzes/${id}`,
       },
       EXERCISES: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/exercises`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/exercises/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/exercises/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/exercises`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/exercises/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/exercises/${id}`,
       },
       EXAMS: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/exams`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/exams/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/exams/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/exams`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/exams/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/exams/${id}`,
       },
+      QUESTIONS_TEMPLATE: (courseId: string) => `/admin/courses/${courseId}/questions/template`,
+      QUESTIONS_IMPORT: (courseId: string, kind: string, parentId: number) =>
+        `/admin/courses/${courseId}/${kind}/${parentId}/questions/import`,
+      RESULTS_TEMPLATE: (courseId: string) => `/admin/courses/${courseId}/results/template`,
+      RESULTS_IMPORT: (courseId: string, kind: string, parentId: number) =>
+        `/admin/courses/${courseId}/${kind}/${parentId}/results/import`,
       ASSIGNMENTS: {
-        STORE: (courseId: number) => `/admin/courses/${courseId}/assignments`,
-        UPDATE: (courseId: number, id: number) => `/admin/courses/${courseId}/assignments/${id}`,
-        DESTROY: (courseId: number, id: number) => `/admin/courses/${courseId}/assignments/${id}`,
+        STORE: (courseId: string) => `/admin/courses/${courseId}/assignments`,
+        UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/assignments/${id}`,
+        DESTROY: (courseId: string, id: number) => `/admin/courses/${courseId}/assignments/${id}`,
       },
     },
   },

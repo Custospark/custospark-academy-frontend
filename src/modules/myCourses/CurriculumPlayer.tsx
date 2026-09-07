@@ -6,7 +6,7 @@ import { Modal } from '../../shared/components/modals/Modal'
 import { useMarkLesson } from '../../shared/api/learner/LearnerCourseQueries'
 import { cn } from '../../shared/utils/cn'
 
-export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; courseId: number }) {
+export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; courseId: string }) {
   const [openSection, setOpenSection] = useState<number | null>(course.sections[0]?.id ?? null)
   const [activeLesson, setActiveLesson] = useState<LearnerLesson | null>(null)
 
@@ -75,7 +75,7 @@ function LessonModal({
   onClose,
 }: {
   lesson: LearnerLesson | null
-  courseId: number
+  courseId: string
   onClose: () => void
 }) {
   const markLesson = useMarkLesson(courseId)

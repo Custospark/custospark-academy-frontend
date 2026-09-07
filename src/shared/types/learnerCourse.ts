@@ -26,17 +26,24 @@ export interface LearnerQuiz {
   description: string | null
   passing_score: number
   time_limit_minutes: number | null
+  opens_at: string | null
+  closes_at: string | null
   questions: LearnerQuestion[]
+  my_status: LearnerAttemptStatus | null
 }
 
 export interface LearnerExercise {
   id: number
   title: string
   instructions: string | null
+  file_path: string | null
   type: string
+  opens_at: string | null
+  closes_at: string | null
   max_score: number
   passing_score: number
   questions: LearnerQuestion[]
+  my_status: LearnerAttemptStatus | LearnerSubmissionStatus | null
 }
 
 export interface LearnerExam {
@@ -47,7 +54,10 @@ export interface LearnerExam {
   max_score: number
   passing_score: number
   time_limit_minutes: number | null
+  opens_at: string | null
+  closes_at: string | null
   questions: LearnerQuestion[]
+  my_status: LearnerSubmissionStatus | null
 }
 
 export interface LearnerAssignment {
@@ -56,6 +66,26 @@ export interface LearnerAssignment {
   instructions: string | null
   submission_type: 'text' | 'file' | 'link'
   max_score: number
+  opens_at: string | null
+  closes_at: string | null
+  my_status: LearnerSubmissionStatus | null
+}
+
+export interface LearnerAttemptStatus {
+  submitted: boolean
+  score: number
+  max_score: number
+  is_passed: boolean
+  submitted_at: string | null
+}
+
+export interface LearnerSubmissionStatus {
+  submitted: boolean
+  status: string
+  score: number | null
+  feedback: string | null
+  submitted_at: string | null
+  graded_at: string | null
 }
 
 export interface LearnerResource {

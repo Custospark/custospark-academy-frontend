@@ -26,7 +26,7 @@ describe('course content mutations', () => {
   it('creates a section via POST to the section endpoint', async () => {
     mockedRequest.mockResolvedValueOnce({ data: { data: { id: 10, title: 'Module 1' } } })
 
-    const { result } = renderHook(() => useCreateSection(7), { wrapper })
+    const { result } = renderHook(() => useCreateSection('data-science'), { wrapper })
 
     act(() => {
       result.current.mutate({ title: 'Module 1' })
@@ -37,14 +37,14 @@ describe('course content mutations', () => {
     expect(mockedRequest).toHaveBeenCalledTimes(1)
     const call = mockedRequest.mock.calls[0][0]
     expect(call.method).toBe('post')
-    expect(call.url).toBe('/admin/courses/7/sections')
+    expect(call.url).toBe('/admin/courses/data-science/sections')
     expect(call.data).toEqual({ title: 'Module 1' })
   })
 
   it('creates a learning outcome via POST with the description payload', async () => {
     mockedRequest.mockResolvedValueOnce({ data: { data: { id: 1, description: 'Build apps' } } })
 
-    const { result } = renderHook(() => useCreateOutcome(7), { wrapper })
+    const { result } = renderHook(() => useCreateOutcome('data-science'), { wrapper })
 
     act(() => {
       result.current.mutate({ description: 'Build apps' })
@@ -54,7 +54,7 @@ describe('course content mutations', () => {
 
     const call = mockedRequest.mock.calls[0][0]
     expect(call.method).toBe('post')
-    expect(call.url).toBe('/admin/courses/7/outcomes')
+    expect(call.url).toBe('/admin/courses/data-science/outcomes')
     expect(call.data).toEqual({ description: 'Build apps' })
   })
 })

@@ -4,8 +4,10 @@ import type { LearnerAssignment, LearnerCourse } from '../../shared/types/learne
 import { Button } from '../../shared/components/buttons/Button'
 import { Modal } from '../../shared/components/modals/Modal'
 import { useSubmitWork, type SubmitResult } from '../../shared/api/learner/LearnerCourseQueries'
+import { windowBlockedReason } from '../../shared/utils/assessmentWindows'
+import { AssessmentBadges } from './assessmentMeta'
 
-export function AssignmentsSection({ course, courseId }: { course: LearnerCourse; courseId: number }) {
+export function AssignmentsSection({ course, courseId }: { course: LearnerCourse; courseId: string }) {
   const [active, setActive] = useState<LearnerAssignment | null>(null)
 
   if (course.assignments.length === 0) {
@@ -31,8 +33,11 @@ export function AssignmentsSection({ course, courseId }: { course: LearnerCourse
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate font-medium text-white">{assignment.title}</div>
-            <div className="text-xs text-text-muted">
-              {assignment.submission_type} submission · max {assignment.max_score} pts
+            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
+              <span>
+                {assignment.submission_type} submission · max {assignment.max_score} pts
+              </span>
+              <AssessmentBadges item={assignment} />
             </div>
           </div>
           <span className="text-sm font-medium text-blue-300">Submit</span>
@@ -55,7 +60,7 @@ function SubmissionModal({
   assignment,
   onClose,
 }: {
-  courseId: number
+  courseId: string
   assignment: LearnerAssignment
   onClose: () => void
 }) {
@@ -63,9 +68,10 @@ function SubmissionModal({
   const [content, setContent] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [result, setResult] = useState<SubmitResult | null>(null)
+  const blockedReason = windowBlockedReason(assignment.opens_at, assignment.closes_at)
 
   function handleSubmit() {
-    if (submit.isPending) return
+    if (submit.isPending || blockedReason) return
     if (assignment.submission_type === 'file' && !file) return
     if (assignment.submission_type === 'text' && !content.trim()) return
 
@@ -99,6 +105,11 @@ function SubmissionModal({
         </div>
       ) : (
         <div className="space-y-4">
+          {blockedReason && (
+            <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+              {blockedReason}
+            </p>
+          )}
           <p className="text-sm leading-relaxed text-text-secondary">
             {assignment.instructions || 'Submit your work below.'}
           </p>
@@ -147,7 +158,7 @@ function SubmissionModal({
               <Button variant="outline" onClick={onClose} disabled={submit.isPending}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} loading={submit.isPending}>
+              <Button onClick={handleSubmit} loading={submit.isPending} disabled={blockedReason !== null}>
                 <Upload className="h-4 w-4" />
                 Submit
               </Button>

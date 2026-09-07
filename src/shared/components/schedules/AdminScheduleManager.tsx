@@ -53,7 +53,7 @@ function formatWhen(iso: string | null): string {
 }
 
 interface AdminScheduleManagerProps {
-  courseId: number | null
+  courseId: string | null
   courseTitle: string
   onClose: () => void
 }
@@ -64,7 +64,7 @@ export function AdminScheduleManager({
   onClose,
 }: AdminScheduleManagerProps) {
   const open = courseId !== null
-  const { data: schedules, isPending, isError } = useCourseSchedules(courseId ?? 0)
+  const { data: schedules, isPending, isError } = useCourseSchedules(courseId ?? '')
   const createMutation = useCreateSchedule()
   const updateMutation = useUpdateSchedule()
   const deleteMutation = useDeleteSchedule()

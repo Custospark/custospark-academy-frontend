@@ -7,21 +7,30 @@ import { useSubmitAttempt, useSubmitWork } from '../../shared/api/learner/Learne
 import { useToast } from '../../app/contexts/useToast'
 import { apiErrorMessage } from '../../shared/utils/apiError'
 import { storageUrl } from '../../shared/utils/storageUrl'
+import { windowBlockedReason } from '../../shared/utils/assessmentWindows'
+import { AssessmentBadges } from './assessmentMeta'
 import { cn } from '../../shared/utils/cn'
 
-export function AssessmentsSection({ course, courseId }: { course: LearnerCourse; courseId: number }) {
+export function AssessmentsSection({ course, courseId }: { course: LearnerCourse; courseId: string }) {
   const [active, setActive] = useState<{ kind: string; quiz?: LearnerQuiz; exercise?: LearnerExercise; exam?: LearnerExam } | null>(null)
 
   return (
     <div className="max-w-3xl space-y-6">
       <AssessmentGroup
         title="Quizzes"
-        items={course.quizzes.map((q) => ({ id: q.id, title: q.title, meta: `${q.questions.length} questions` }))}
+        items={course.quizzes.map((q) => ({ id: q.id, title: q.title, meta: `${q.questions.length} questions`, item: q }))}
         onOpen={(id) => setActive({ kind: 'quiz', quiz: course.quizzes.find((q) => q.id === id) })}
       />
       <AssessmentGroup
         title="Exercises"
-        items={course.exercises.map((e) => ({ id: e.id, title: e.title, meta: `${e.questions.length} questions` }))}
+        items={course.exercises.map((e) => ({
+          id: e.id,
+          title: e.title,
+          meta: e.file_path
+            ? `${e.questions.length} questions · paper attached`
+            : `${e.questions.length} questions`,
+          item: e,
+        }))}
         onOpen={(id) => setActive({ kind: 'exercise', exercise: course.exercises.find((e) => e.id === id) })}
       />
       <AssessmentGroup
@@ -32,6 +41,7 @@ export function AssessmentsSection({ course, courseId }: { course: LearnerCourse
           meta: x.file_path
             ? `${x.questions.length} questions · paper attached`
             : `${x.questions.length} questions`,
+          item: x,
         }))}
         onOpen={(id) => setActive({ kind: 'exam', exam: course.exams.find((x) => x.id === id) })}
       />
@@ -56,7 +66,7 @@ function AssessmentGroup({
   onOpen,
 }: {
   title: string
-  items: Array<{ id: number; title: string; meta: string }>
+  items: Array<{ id: number; title: string; meta: string; item: LearnerQuiz | LearnerExercise | LearnerExam }>
   onOpen: (id: number) => void
 }) {
   return (
@@ -79,7 +89,10 @@ function AssessmentGroup({
             >
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium text-white">{item.title}</div>
-                <div className="text-xs text-text-muted">{item.meta}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
+                  <span>{item.meta}</span>
+                  <AssessmentBadges item={item.item} />
+                </div>
               </div>
               <span className="text-sm font-medium text-blue-300">Take</span>
             </button>
@@ -98,7 +111,7 @@ function AttemptModal({
   exam,
   onClose,
 }: {
-  courseId: number
+  courseId: string
   kind: string
   quiz?: LearnerQuiz
   exercise?: LearnerExercise
@@ -118,22 +131,28 @@ function AttemptModal({
   const title = assessment?.title ?? ''
   const questions: LearnerQuestion[] = assessment?.questions ?? []
   const maxScore = questions.reduce((sum, q) => sum + q.points, 0)
+  const blockedReason = assessment
+    ? windowBlockedReason(assessment.opens_at, assessment.closes_at)
+    : null
   const examPaperUrl = kind === 'exam' ? storageUrl(exam?.file_path) : null
-  const examNeedsFile = kind === 'exam' && questions.length === 0
+  const exercisePaperUrl = kind === 'exercise' ? storageUrl(exercise?.file_path) : null
+  const paperUrl = examPaperUrl ?? exercisePaperUrl
+  // File-backed assessments are graded by an instructor via submissions.
+  const manualGrading = kind === 'exam' || exercisePaperUrl !== null
+  const paperNeedsFile = paperUrl !== null && questions.length === 0
 
   function handleSubmit() {
-    if (!assessment || submitAttempt.isPending || submitWork.isPending) return
+    if (!assessment || submitAttempt.isPending || submitWork.isPending || blockedReason) return
     setSubmitError(null)
-    if (kind === 'exam') {
-      // Exams are graded by an instructor via the submission endpoint.
-      // Paper-only exams require an uploaded answer script.
-      if (examNeedsFile && !answerFile) {
-        setSubmitError('Upload your answer script to submit this exam.')
+    if (manualGrading) {
+      // Paper-only assessments require an uploaded answer script.
+      if (paperNeedsFile && !answerFile) {
+        setSubmitError('Upload your answer script to submit.')
         return
       }
       submitWork.mutate(
         {
-          type: 'exam',
+          type: kind,
           typeId: assessment.id,
           content: JSON.stringify(answers),
           file: answerFile ?? undefined,
@@ -141,10 +160,10 @@ function AttemptModal({
         {
           onSuccess: () => {
             setExamSubmitted(true)
-            showToast('success', 'Exam submitted for grading.')
+            showToast('success', 'Submitted for grading.')
           },
           onError: (err) => {
-            const message = apiErrorMessage(err, 'Could not submit your exam.')
+            const message = apiErrorMessage(err, 'Could not submit.')
             setSubmitError(message)
             showToast('error', message)
           },
@@ -170,7 +189,7 @@ function AttemptModal({
       {examSubmitted ? (
         <div className="py-4 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-semantic-success" />
-          <h3 className="mt-4 text-lg font-bold text-white">Exam submitted</h3>
+          <h3 className="mt-4 text-lg font-bold text-white">Submitted</h3>
           <p className="mt-1.5 text-sm text-text-secondary">
             Your answers are with the instructor for grading. You will see your score here once graded.
           </p>
@@ -200,20 +219,25 @@ function AttemptModal({
         </div>
       ) : (
         <div className="space-y-4">
+          {blockedReason && (
+            <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+              {blockedReason}
+            </p>
+          )}
           <p className="text-sm text-text-secondary">
             {questions.length > 0
-              ? <>Answer each question below. {kind === 'exam' ? 'Your exam will be graded by an instructor.' : 'Auto-graded on submit.'}</>
-              : 'This exam is a paper file - download it, complete it, then upload your answer script.'}
+              ? <>Answer each question below. {manualGrading ? 'This will be graded by an instructor.' : 'Auto-graded on submit.'}</>
+              : 'Download the paper file, complete it, then upload your answer script.'}
           </p>
-          {examPaperUrl && (
+          {paperUrl && (
             <a
-              href={examPaperUrl}
+              href={paperUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-xl border border-blue-500/40 bg-blue-500/10 px-4 py-3 transition-colors hover:border-blue-500"
             >
               <Download className="h-5 w-5 shrink-0 text-blue-300" />
-              <span className="text-sm font-medium text-white">Download exam paper</span>
+              <span className="text-sm font-medium text-white">Download paper</span>
             </a>
           )}
           {questions.map((q, index) => (
@@ -251,10 +275,10 @@ function AttemptModal({
               </div>
             </div>
           ))}
-          {kind === 'exam' && (
+          {manualGrading && (
             <div>
               <label className="mb-1.5 block text-sm font-medium text-text-secondary">
-                Upload answer script{examNeedsFile ? ' (required)' : ' (optional)'}
+                Upload answer script{paperNeedsFile ? ' (required)' : ' (optional)'}
               </label>
               <div className="flex items-center gap-3 rounded-xl border border-border-default bg-surface-card px-4 py-3">
                 <FileUp className="h-5 w-5 shrink-0 text-blue-300" />
@@ -281,7 +305,7 @@ function AttemptModal({
               <Button variant="outline" onClick={onClose} disabled={submitAttempt.isPending}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} loading={submitAttempt.isPending || submitWork.isPending}>
+              <Button onClick={handleSubmit} loading={submitAttempt.isPending || submitWork.isPending} disabled={blockedReason !== null}>
                 Submit
               </Button>
             </div>

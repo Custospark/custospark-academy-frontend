@@ -8,6 +8,7 @@ import {
   useCreateAssignment,
   useDeleteAssignment,
 } from '../../../../shared/api/courses/CourseContentQueries'
+import { fromInputDateTime, windowLabel } from '../../../../shared/utils/assessmentWindows'
 
 const SUBMISSION_HINTS: Record<AssignmentItem['submission_type'], string> = {
   text: 'Learners submit written text in a text area.',
@@ -17,13 +18,15 @@ const SUBMISSION_HINTS: Record<AssignmentItem['submission_type'], string> = {
 
 export function AssignmentsTab({ course }: { course: CourseFull }) {
   const [showModal, setShowModal] = useState(false)
-  const createAssignment = useCreateAssignment(course.id)
-  const deleteAssignment = useDeleteAssignment(course.id)
+  const createAssignment = useCreateAssignment(course.slug)
+  const deleteAssignment = useDeleteAssignment(course.slug)
   const [form, setForm] = useState({
     title: '',
     instructions: '',
     submission_type: 'text' as AssignmentItem['submission_type'],
     max_score: '100',
+    opens_at: '',
+    closes_at: '',
   })
 
   function handleSubmit(e: FormEvent) {
@@ -35,11 +38,13 @@ export function AssignmentsTab({ course }: { course: CourseFull }) {
         instructions: form.instructions || null,
         submission_type: form.submission_type,
         max_score: Number(form.max_score) || 100,
+        opens_at: fromInputDateTime(form.opens_at),
+        closes_at: fromInputDateTime(form.closes_at),
       },
       {
         onSuccess: () => {
           setShowModal(false)
-          setForm({ title: '', instructions: '', submission_type: 'text', max_score: '100' })
+          setForm({ title: '', instructions: '', submission_type: 'text', max_score: '100', opens_at: '', closes_at: '' })
         },
       },
     )
@@ -71,13 +76,20 @@ export function AssignmentsTab({ course }: { course: CourseFull }) {
               key={assignment.id}
               className="flex items-center gap-3 rounded-xl border border-border-subtle bg-surface-card px-4 py-3"
             >
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-medium text-white">{assignment.title}</div>
-                <div className="text-xs text-text-muted">
-                  {assignment.submission_type} submission · max {assignment.max_score} pts
-                  {assignment.due_after_days ? ` · due in ${assignment.due_after_days}d` : ''}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium text-white">{assignment.title}</div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
+                    <span>
+                      {assignment.submission_type} submission · max {assignment.max_score} pts
+                      {assignment.due_after_days ? ` · due in ${assignment.due_after_days}d` : ''}
+                    </span>
+                    {windowLabel(assignment.opens_at, assignment.closes_at) && (
+                      <span className="rounded-full bg-surface-section px-2 py-0.5">
+                        {windowLabel(assignment.opens_at, assignment.closes_at)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
               <button
                 type="button"
                 onClick={() => deleteAssignment.mutate(assignment.id)}
@@ -130,6 +142,20 @@ export function AssignmentsTab({ course }: { course: CourseFull }) {
               min={0}
               value={form.max_score}
               onChange={(e) => setForm((f) => ({ ...f, max_score: e.target.value }))}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Opens at (optional)"
+              type="datetime-local"
+              value={form.opens_at}
+              onChange={(e) => setForm((f) => ({ ...f, opens_at: e.target.value }))}
+            />
+            <Input
+              label="Closes at (optional)"
+              type="datetime-local"
+              value={form.closes_at}
+              onChange={(e) => setForm((f) => ({ ...f, closes_at: e.target.value }))}
             />
           </div>
           <div className="flex justify-end gap-3 pt-1">

@@ -145,7 +145,7 @@ export default function AdminCoursesPage() {
         )
         refetch()
         setShowCreate(false)
-        navigate(ROUTES.APP.ADMIN.COURSE(data.data.id))
+        navigate(ROUTES.APP.ADMIN.COURSE(data.data.slug))
         setSaving(false)
         return
       }
@@ -275,7 +275,7 @@ export default function AdminCoursesPage() {
                     Edit
                   </button>
                   <Link
-                    to={ROUTES.APP.ADMIN.COURSE(course.id)}
+                    to={ROUTES.APP.ADMIN.COURSE(course.slug)}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border-default px-2.5 py-1.5 text-xs font-semibold text-text-secondary transition-colors hover:border-border-strong hover:text-white"
                   >
                     Manage
@@ -459,7 +459,7 @@ export default function AdminCoursesPage() {
       </Modal>
 
       <AdminScheduleManager
-        courseId={scheduleCourse?.id ?? null}
+        courseId={scheduleCourse?.slug ?? null}
         courseTitle={scheduleCourse?.title ?? ''}
         onClose={() => setScheduleCourse(null)}
       />

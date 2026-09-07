@@ -74,11 +74,11 @@ function formatDate(date: string | null): string | null {
 }
 
 export default function CourseDetailPage() {
-  const { id } = useParams<{ id: string }>()
+  const { slug } = useParams<{ slug: string }>()
   const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated)
   const [applyOpen, setApplyOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const { data: course, isPending, isError, refetch } = useCourse(id ?? '')
+  const { data: course, isPending, isError, refetch } = useCourse(slug ?? '')
 
   // Keep the loader visible until we actually have data (not just until the
   // query transitions out of its initial pending state). This prevents the
@@ -309,6 +309,7 @@ export default function CourseDetailPage() {
                   )}
                   <EnrollmentActionButton
                     courseId={course.id}
+                    courseSlug={course.slug}
                     courseTitle={course.title}
                     enrollmentId={enrolled.id}
                     status={enrolled.status}
@@ -380,7 +381,7 @@ export default function CourseDetailPage() {
       />
 
       <CertificatePreviewModal
-        courseId={previewOpen ? course.id : null}
+        courseId={previewOpen ? course.slug : null}
         courseTitle={course.title}
         onClose={() => setPreviewOpen(false)}
       />

@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { ChevronDown, FolderPlus, NotebookPen, Plus, Trash2, Video, FileText } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { ChevronDown, FolderPlus, NotebookPen, Pencil, Plus, Trash2, Video, FileText } from 'lucide-react'
 import type { CourseFull, CourseSection, LessonItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
@@ -8,35 +8,22 @@ import {
   useCreateSection,
   useDeleteSection,
   useCreateLesson,
+  useUpdateLesson,
   useDeleteLesson,
 } from '../../../../shared/api/courses/CourseContentQueries'
 
 const CONTENT_TYPE_ICON = { video: Video, text: FileText, article: FileText, embed: FileText }
 
 export function CurriculumTab({ course }: { course: CourseFull }) {
-  const [sectionTitle, setSectionTitle] = useState('')
   const [openSection, setOpenSection] = useState<number | null>(course.sections[0]?.id ?? null)
-  const [lessonModal, setLessonModal] = useState<{ sectionId: number | null; sectionTitle: string } | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [lessonModal, setLessonModal] = useState<{
+    sectionId: number | null
+    sectionTitle: string
+    lesson?: LessonItem
+  } | null>(null)
+  const [sectionModalOpen, setSectionModalOpen] = useState(false)
 
-  const createSection = useCreateSection(course.id)
-  const deleteSection = useDeleteSection(course.id)
-
-  function addSection(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
-    if (!sectionTitle.trim() || createSection.isPending) return
-    createSection.mutate(
-      { title: sectionTitle.trim() },
-      {
-        onSuccess: (section) => {
-          setSectionTitle('')
-          setOpenSection(section.id)
-        },
-        onError: (err) => setError(err.message || 'Could not create section.'),
-      },
-    )
-  }
+  const deleteSection = useDeleteSection(course.slug)
 
   return (
     <div className="max-w-3xl">
@@ -44,25 +31,13 @@ export function CurriculumTab({ course }: { course: CourseFull }) {
         Organise the course into sections, each containing lessons (text, video, article or embed).
       </p>
 
-      {error && (
-        <div className="mb-4 rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
-          {error}
-        </div>
-      )}
-
       {/* Add section */}
-      <form onSubmit={addSection} className="mb-6 flex items-start gap-3">
-        <Input
-          value={sectionTitle}
-          onChange={(e) => setSectionTitle(e.target.value)}
-          placeholder="New section title, e.g. Module 1 - Foundations"
-          className="flex-1"
-        />
-        <Button type="submit" loading={createSection.isPending} className="shrink-0">
+      <div className="mb-6">
+        <Button onClick={() => setSectionModalOpen(true)} className="shrink-0">
           <FolderPlus className="h-4 w-4" />
           Add section
         </Button>
-      </form>
+      </div>
 
       {course.sections.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border-strong bg-surface-card p-10 text-center">
@@ -77,9 +52,13 @@ export function CurriculumTab({ course }: { course: CourseFull }) {
             <SectionBlock
               key={section.id}
               section={section}
+              courseSlug={course.slug}
               open={openSection === section.id}
               onToggle={() => setOpenSection(openSection === section.id ? null : section.id)}
               onAddLesson={() => setLessonModal({ sectionId: section.id, sectionTitle: section.title })}
+              onEditLesson={(lesson) =>
+                setLessonModal({ sectionId: section.id, sectionTitle: section.title, lesson })
+              }
               onDelete={() => deleteSection.mutate(section.id)}
             />
           ))}
@@ -91,21 +70,96 @@ export function CurriculumTab({ course }: { course: CourseFull }) {
         modal={lessonModal}
         onClose={() => setLessonModal(null)}
       />
+
+      <AddSectionModal
+        courseId={course.slug}
+        open={sectionModalOpen}
+        onClose={() => setSectionModalOpen(false)}
+        onCreated={(sectionId) => {
+          setSectionModalOpen(false)
+          setOpenSection(sectionId)
+        }}
+      />
     </div>
+  )
+}
+
+function AddSectionModal({
+  courseId,
+  open,
+  onClose,
+  onCreated,
+}: {
+  courseId: string
+  open: boolean
+  onClose: () => void
+  onCreated: (sectionId: number) => void
+}) {
+  const createSection = useCreateSection(courseId)
+  const [sectionTitle, setSectionTitle] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  function addSection(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+    if (!sectionTitle.trim() || createSection.isPending) return
+    createSection.mutate(
+      { title: sectionTitle.trim() },
+      {
+        onSuccess: (section) => {
+          setSectionTitle('')
+          onCreated(section.id)
+        },
+        onError: (err) => setError(err.message || 'Could not create section.'),
+      },
+    )
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Add section" size="sm">
+      <form onSubmit={addSection} className="space-y-4">
+        {error && (
+          <p className="rounded-lg border border-semantic-error/40 bg-semantic-error/10 px-4 py-3 text-sm text-semantic-error">
+            {error}
+          </p>
+        )}
+        <Input
+          label="Section title"
+          value={sectionTitle}
+          onChange={(e) => setSectionTitle(e.target.value)}
+          required
+          autoFocus
+          placeholder="e.g. Module 1 - Foundations"
+        />
+        <div className="flex justify-end gap-3 pt-1">
+          <Button type="button" variant="outline" onClick={onClose} disabled={createSection.isPending}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={createSection.isPending}>
+            <FolderPlus className="h-4 w-4" />
+            Add section
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 
 function SectionBlock({
   section,
+  courseSlug,
   open,
   onToggle,
   onAddLesson,
+  onEditLesson,
   onDelete,
 }: {
   section: CourseSection
+  courseSlug: string
   open: boolean
   onToggle: () => void
   onAddLesson: () => void
+  onEditLesson: (lesson: LessonItem) => void
   onDelete: () => void
 }) {
   return (
@@ -139,7 +193,14 @@ function SectionBlock({
           {section.lessons.length === 0 ? (
             <p className="py-2 text-sm text-text-muted">No lessons in this section yet.</p>
           ) : (
-            section.lessons.map((lesson) => <LessonRow key={lesson.id} lesson={lesson} courseId={section.course_id} />)
+            section.lessons.map((lesson) => (
+            <LessonRow
+                key={lesson.id}
+                lesson={lesson}
+                courseId={courseSlug}
+                onEdit={() => onEditLesson(lesson)}
+              />
+            ))
           )}
         </div>
       )}
@@ -147,7 +208,7 @@ function SectionBlock({
   )
 }
 
-function LessonRow({ lesson, courseId }: { lesson: LessonItem; courseId: number }) {
+function LessonRow({ lesson, courseId, onEdit }: { lesson: LessonItem; courseId: string; onEdit: () => void }) {
   const deleteLesson = useDeleteLesson(courseId)
   const Icon = CONTENT_TYPE_ICON[lesson.content_type] ?? FileText
 
@@ -162,6 +223,14 @@ function LessonRow({ lesson, courseId }: { lesson: LessonItem; courseId: number 
           {lesson.is_free_preview ? ' · preview' : ''}
         </div>
       </div>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface-card-hover hover:text-white"
+        aria-label="Edit lesson"
+      >
+        <Pencil className="h-4 w-4" />
+      </button>
       <button
         type="button"
         onClick={() => deleteLesson.mutate(lesson.id)}
@@ -180,10 +249,12 @@ function AddLessonModal({
   onClose,
 }: {
   course: CourseFull
-  modal: { sectionId: number | null; sectionTitle: string } | null
+  modal: { sectionId: number | null; sectionTitle: string; lesson?: LessonItem } | null
   onClose: () => void
 }) {
-  const createLesson = useCreateLesson(course.id)
+  const createLesson = useCreateLesson(course.slug)
+  const updateLesson = useUpdateLesson(course.slug)
+  const editing = modal?.lesson ?? null
   const [form, setForm] = useState({
     title: '',
     content_type: 'text' as LessonItem['content_type'],
@@ -194,32 +265,67 @@ function AddLessonModal({
   })
   const [lessonError, setLessonError] = useState<string | null>(null)
 
+  // Prefill when editing; reset when opening a blank form.
+  useEffect(() => {
+    if (modal?.lesson) {
+      const lesson = modal.lesson
+      setForm({
+        title: lesson.title,
+        content_type: lesson.content_type,
+        content: lesson.content ?? '',
+        video_url: lesson.video_url ?? '',
+        duration_minutes: lesson.duration_minutes ? String(lesson.duration_minutes) : '',
+        is_free_preview: lesson.is_free_preview,
+      })
+    } else if (modal) {
+      setForm({
+        title: '',
+        content_type: 'text',
+        content: '',
+        video_url: '',
+        duration_minutes: '',
+        is_free_preview: false,
+      })
+    }
+    setLessonError(null)
+  }, [modal])
+
+  const busy = createLesson.isPending || updateLesson.isPending
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setLessonError(null)
-    if (!form.title.trim() || !modal || createLesson.isPending) return
-    createLesson.mutate(
-      {
-        section_id: modal.sectionId,
-        title: form.title.trim(),
-        content_type: form.content_type,
-        content: form.content || null,
-        video_url: form.video_url || null,
-        duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null,
-        is_free_preview: form.is_free_preview,
-      },
-      {
-        onSuccess: onClose,
-        onError: (err) => setLessonError(err.message || 'Could not create lesson.'),
-      },
-    )
+    if (!form.title.trim() || !modal || busy) return
+    const payload = {
+      section_id: modal.sectionId,
+      title: form.title.trim(),
+      content_type: form.content_type,
+      content: form.content || null,
+      video_url: form.video_url || null,
+      duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null,
+      is_free_preview: form.is_free_preview,
+    }
+    if (editing) {
+      updateLesson.mutate(
+        { ...payload, id: editing.id },
+        {
+          onSuccess: onClose,
+          onError: (err) => setLessonError(err.message || 'Could not update lesson.'),
+        },
+      )
+      return
+    }
+    createLesson.mutate(payload, {
+      onSuccess: onClose,
+      onError: (err) => setLessonError(err.message || 'Could not create lesson.'),
+    })
   }
 
   return (
     <Modal
       open={modal !== null}
       onClose={onClose}
-      title={`Add lesson${modal ? ` to ${modal.sectionTitle}` : ''}`}
+      title={editing ? `Edit lesson` : `Add lesson${modal ? ` to ${modal.sectionTitle}` : ''}`}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -299,11 +405,11 @@ function AddLessonModal({
         </div>
 
         <div className="flex justify-end gap-3 pt-1">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button type="submit" loading={createLesson.isPending}>
-            Add lesson
+          <Button type="submit" loading={busy}>
+            {editing ? 'Save changes' : 'Add lesson'}
           </Button>
         </div>
       </form>

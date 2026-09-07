@@ -163,6 +163,7 @@ export interface CourseEnrollment {
 export interface Enrollment {
   id: number
   course_id: number
+  course_slug: string | null
   course_title: string | null
   user_id: number
   user_name: string | null

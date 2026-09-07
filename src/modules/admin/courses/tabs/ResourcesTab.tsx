@@ -18,8 +18,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function ResourcesTab({ course }: { course: CourseFull }) {
   const [showModal, setShowModal] = useState(false)
-  const createResource = useCreateResource(course.id)
-  const deleteResource = useDeleteResource(course.id)
+  const createResource = useCreateResource(course.slug)
+  const deleteResource = useDeleteResource(course.slug)
   const [form, setForm] = useState({
     title: '',
     type: 'link' as ResourceItem['type'],

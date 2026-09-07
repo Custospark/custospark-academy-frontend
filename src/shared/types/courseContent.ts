@@ -61,6 +61,8 @@ export interface QuizItem {
   description: string | null
   passing_score: number
   time_limit_minutes: number | null
+  opens_at: string | null
+  closes_at: string | null
   is_published: boolean
   questions: QuestionItem[]
 }
@@ -71,10 +73,13 @@ export interface ExerciseItem {
   lesson_id: number | null
   title: string
   instructions: string | null
+  file_path: string | null
   type: 'quiz' | 'practical'
   max_score: number
   passing_score: number
   time_limit_minutes: number | null
+  opens_at: string | null
+  closes_at: string | null
   is_published: boolean
   questions: QuestionItem[]
 }
@@ -88,6 +93,8 @@ export interface ExamItem {
   max_score: number
   passing_score: number
   time_limit_minutes: number | null
+  opens_at: string | null
+  closes_at: string | null
   is_published: boolean
   questions: QuestionItem[]
 }
@@ -100,6 +107,8 @@ export interface AssignmentItem {
   instructions: string | null
   submission_type: 'text' | 'file' | 'link'
   due_after_days: number | null
+  opens_at: string | null
+  closes_at: string | null
   max_score: number
   is_published: boolean
 }

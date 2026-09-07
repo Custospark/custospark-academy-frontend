@@ -5,7 +5,7 @@ import { AcademyLoader } from '../loading/AcademyLoader'
 import { useCertificatePreview } from '../../api/misc/MiscQueries'
 
 interface CertificatePreviewModalProps {
-  courseId: number | null
+  courseId: string | null
   courseTitle: string
   onClose: () => void
 }

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { FileQuestion, FileUp, Plus, Trash2, ClipboardCheck, BookMarked, FileCheck2 } from 'lucide-react'
+import { Download, FileQuestion, FileUp, Plus, Trash2, ClipboardCheck, BookMarked, FileCheck2, Sheet } from 'lucide-react'
+import { fromInputDateTime, windowLabel } from '../../../../shared/utils/assessmentWindows'
 import type { CourseFull, QuestionItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
@@ -11,6 +12,10 @@ import {
   useDeleteExercise,
   useCreateExam,
   useDeleteExam,
+  useImportQuestions,
+  useImportResults,
+  useQuestionsTemplate,
+  useResultsTemplate,
 } from '../../../../shared/api/courses/CourseContentQueries'
 
 type Kind = 'quiz' | 'exercise' | 'exam'
@@ -33,18 +38,22 @@ const EMPTY_QUESTION: DraftQuestion = { question: '', type: 'multiple_choice', o
 
 export function AssessmentsTab({ course }: { course: CourseFull }) {
   const [kind, setKind] = useState<Kind | null>(null)
-  const createQuiz = useCreateQuiz(course.id)
-  const deleteQuiz = useDeleteQuiz(course.id)
-  const createExercise = useCreateExercise(course.id)
-  const deleteExercise = useDeleteExercise(course.id)
-  const createExam = useCreateExam(course.id)
-  const deleteExam = useDeleteExam(course.id)
+  const createQuiz = useCreateQuiz(course.slug)
+  const deleteQuiz = useDeleteQuiz(course.slug)
+  const createExercise = useCreateExercise(course.slug)
+  const deleteExercise = useDeleteExercise(course.slug)
+  const createExam = useCreateExam(course.slug)
+  const deleteExam = useDeleteExam(course.slug)
 
   const [title, setTitle] = useState('')
   const [passing, setPassing] = useState('50')
+  const [opensAt, setOpensAt] = useState('')
+  const [closesAt, setClosesAt] = useState('')
   const [questions, setQuestions] = useState<DraftQuestion[]>([{ ...EMPTY_QUESTION }])
-  const [examFile, setExamFile] = useState<File | null>(null)
+  const [paperFile, setPaperFile] = useState<File | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
+  const [resultsTarget, setResultsTarget] = useState<{ kind: Kind; id: number } | null>(null)
 
   const creators: Record<Kind, (payload: Record<string, unknown>) => void> = {
     quiz: (p) => createQuiz.mutate(p as never, { onSuccess: resetAndClose }),
@@ -62,8 +71,10 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
     setKind(null)
     setTitle('')
     setPassing('50')
+    setOpensAt('')
+    setClosesAt('')
     setQuestions([{ ...EMPTY_QUESTION }])
-    setExamFile(null)
+    setPaperFile(null)
     setFormError(null)
   }
 
@@ -81,7 +92,7 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
         points: Number(q.points) || 1,
       }))
     // An exam may be a paper file, typed questions, or both - but never neither.
-    if (kind === 'exam' && cleanQuestions.length === 0 && !examFile) {
+    if (kind === 'exam' && cleanQuestions.length === 0 && !paperFile) {
       setFormError('Attach an exam paper file or add at least one typed question.')
       return
     }
@@ -90,7 +101,11 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
       passing_score: Number(passing) || 50,
       max_score: 100,
       questions: cleanQuestions,
-      ...(kind === 'exam' && examFile ? { file: examFile } : {}),
+      opens_at: fromInputDateTime(opensAt),
+      closes_at: fromInputDateTime(closesAt),
+      ...(kind !== 'quiz' && paperFile ? { file: paperFile } : {}),
+      // Paper-backed exercises are instructor-graded, never auto-graded.
+      ...(kind === 'exercise' && paperFile ? { type: 'practical' } : {}),
     })
   }
 
@@ -113,7 +128,26 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
             Add {k}
           </Button>
         ))}
+        <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+          <Sheet className="h-4 w-4" />
+          Import from Excel
+        </Button>
       </div>
+
+      <ImportQuestionsDialog
+        course={course}
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+      />
+
+      {resultsTarget && (
+        <ResultsImportDialog
+          courseSlug={course.slug}
+          kind={resultsTarget.kind}
+          parentId={resultsTarget.id}
+          onClose={() => setResultsTarget(null)}
+        />
+      )}
 
       <div className="space-y-4">
         {lists.map(({ kind: k, items }) => {
@@ -140,7 +174,12 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
                           <span>
                             {item.questions.length} questions · passing {item.passing_score}%
                           </span>
-                          {k === 'exam' && 'file_path' in item && item.file_path && (
+                          {windowLabel(item.opens_at, item.closes_at) && (
+                            <span className="rounded-full bg-surface-section px-2 py-0.5">
+                              {windowLabel(item.opens_at, item.closes_at)}
+                            </span>
+                          )}
+                          {k !== 'quiz' && 'file_path' in item && item.file_path && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 font-medium text-blue-300">
                               <FileCheck2 className="h-3 w-3" />
                               Paper attached
@@ -148,6 +187,18 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
                           )}
                         </div>
                       </div>
+                      {k !== 'quiz' && (
+                        <button
+                          type="button"
+                          onClick={() => setResultsTarget({ kind: k, id: item.id })}
+                          className="flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold text-text-muted transition-colors hover:bg-surface-card-hover hover:text-white"
+                          aria-label={`Upload results for ${item.title}`}
+                          title="Upload results (Excel)"
+                        >
+                          <FileUp className="h-3.5 w-3.5" />
+                          Results
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => deleting[k](item.id)}
@@ -179,28 +230,28 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
             required
             placeholder={kind === 'quiz' ? 'e.g. Module 1 Quiz' : kind === 'exercise' ? 'e.g. Practice Problem Set' : 'e.g. Final Exam'}
           />
-          {kind === 'exam' && (
+          {(kind === 'exam' || kind === 'exercise') && (
             <div>
               <label className="mb-1.5 block text-sm font-medium text-text-secondary">
-                Exam paper (PDF/file, optional)
+                Paper file (PDF, optional)
               </label>
               <div className="flex items-center gap-3 rounded-xl border border-border-default bg-surface-card px-4 py-3">
                 <FileUp className="h-5 w-5 shrink-0 text-blue-300" />
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
-                  onChange={(e) => setExamFile(e.target.files?.[0] ?? null)}
+                  onChange={(e) => setPaperFile(e.target.files?.[0] ?? null)}
                   className="w-full text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
                 />
               </div>
               <p className="mt-1.5 text-xs text-text-muted">
-                {examFile
-                  ? `Selected: ${examFile.name}`
-                  : 'Learners download the paper, then upload their answer script. Combine with typed questions or use the paper alone.'}
+                {paperFile
+                  ? `Selected: ${paperFile.name}`
+                  : 'Learners download the paper, then upload their answer script for instructor grading. Combine with typed questions or use the paper alone.'}
               </p>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input
               label="Passing score (%)"
               type="number"
@@ -208,6 +259,18 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
               max={100}
               value={passing}
               onChange={(e) => setPassing(e.target.value)}
+            />
+            <Input
+              label="Opens at (optional)"
+              type="datetime-local"
+              value={opensAt}
+              onChange={(e) => setOpensAt(e.target.value)}
+            />
+            <Input
+              label="Closes at (optional)"
+              type="datetime-local"
+              value={closesAt}
+              onChange={(e) => setClosesAt(e.target.value)}
             />
           </div>
 
@@ -284,4 +347,208 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
   function updateQuestion(index: number, patch: Partial<DraftQuestion>) {
     setQuestions((list) => list.map((q, i) => (i === index ? { ...q, ...patch } : q)))
   }
+}
+
+const IMPORT_KIND_LABEL: Record<Kind, string> = { quiz: 'Quiz', exercise: 'Exercise', exam: 'Exam' }
+
+/**
+ * One obvious place to bulk-upload questions: pick the target assessment,
+ * download the fill-in template, then upload the filled file. Template,
+ * picker and uploader live together so the flow is never a dead end.
+ */
+function ImportQuestionsDialog({
+  course,
+  open,
+  onClose,
+}: {
+  course: CourseFull
+  open: boolean
+  onClose: () => void
+}) {
+  const [kind, setKind] = useState<Kind>('quiz')
+  const [targetId, setTargetId] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const importQuestions = useImportQuestions(course.slug)
+  const downloadTemplate = useQuestionsTemplate(course.slug)
+
+  const targets =
+    kind === 'quiz' ? course.quizzes : kind === 'exercise' ? course.exercises : course.exams
+
+  function handleUpload() {
+    if (!targetId || !file || importQuestions.isPending) return
+    importQuestions.mutate(
+      { kind, parentId: Number(targetId), file },
+      {
+        onSuccess: () => {
+          setFile(null)
+          setTargetId('')
+          onClose()
+        },
+      },
+    )
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Import questions from Excel" size="sm">
+      <div className="space-y-4">
+        <p className="text-sm text-text-secondary">
+          Download the template, fill in one question per row (options separated by{' '}
+          <code className="rounded bg-surface-input px-1 font-mono text-xs">|</code>), then upload
+          it here.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => void downloadTemplate()}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 transition-colors hover:text-blue-200"
+        >
+          <Download className="h-4 w-4" />
+          Download Excel template
+        </button>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text-secondary">Type</label>
+            <select
+              value={kind}
+              onChange={(e) => {
+                setKind(e.target.value as Kind)
+                setTargetId('')
+              }}
+              className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-primary focus:border-border-focus focus:outline-none"
+            >
+              {(['quiz', 'exercise', 'exam'] as Kind[]).map((k) => (
+                <option key={k} value={k}>
+                  {IMPORT_KIND_LABEL[k]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+              Into {IMPORT_KIND_LABEL[kind].toLowerCase()}
+            </label>
+            <select
+              value={targetId}
+              onChange={(e) => setTargetId(e.target.value)}
+              className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-primary focus:border-border-focus focus:outline-none"
+            >
+              <option value="">Select...</option>
+              {targets.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+            Filled Excel file
+          </label>
+          <input
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
+          />
+          {file && <p className="mt-1.5 text-xs text-text-muted">Selected: {file.name}</p>}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-1">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpload}
+            loading={importQuestions.isPending}
+            disabled={!targetId || !file}
+          >
+            <Sheet className="h-4 w-4" />
+            Upload questions
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+const RESULTS_KIND_LABEL: Record<Kind, string> = { quiz: 'Quiz', exercise: 'Exercise', exam: 'Exam' }
+
+/**
+ * Bulk instructor results for one assessment: download the fill-in template
+ * (learner_email | score | feedback), then upload it. Rows for learners who
+ * are not enrolled (or bad scores) are reported back, the rest become graded
+ * submissions the learner sees as performance.
+ */
+function ResultsImportDialog({
+  courseSlug,
+  kind,
+  parentId,
+  onClose,
+}: {
+  courseSlug: string
+  kind: Kind
+  parentId: number
+  onClose: () => void
+}) {
+  const [file, setFile] = useState<File | null>(null)
+  const importResults = useImportResults(courseSlug)
+  const downloadTemplate = useResultsTemplate(courseSlug)
+
+  function handleUpload() {
+    if (!file || importResults.isPending) return
+    importResults.mutate(
+      { kind, parentId, file },
+      {
+        onSuccess: () => {
+          setFile(null)
+          onClose()
+        },
+      },
+    )
+  }
+
+  return (
+    <Modal open onClose={onClose} title={`Upload ${RESULTS_KIND_LABEL[kind].toLowerCase()} results`} size="sm">
+      <div className="space-y-4">
+        <p className="text-sm text-text-secondary">
+          Download the template, fill one row per learner (email, score, feedback), then upload
+          it here. Each row becomes a graded result the learner can see.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => void downloadTemplate()}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 transition-colors hover:text-blue-200"
+        >
+          <Download className="h-4 w-4" />
+          Download results template
+        </button>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+            Filled Excel file
+          </label>
+          <input
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
+          />
+          {file && <p className="mt-1.5 text-xs text-text-muted">Selected: {file.name}</p>}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-1">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleUpload} loading={importResults.isPending} disabled={!file}>
+            <FileUp className="h-4 w-4" />
+            Upload results
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
 }

@@ -16,14 +16,14 @@ import type {
 } from '../../types/courseContent'
 
 export const courseContentKeys = {
-  full: (courseId: number) => ['admin', 'course-content', courseId] as const,
+  full: (courseId: string) => ['admin', 'course-content', courseId] as const,
 }
 
 interface DataResponse<T> {
   data: T
 }
 
-export function useCourseContent(courseId: number) {
+export function useCourseContent(courseId: string) {
   return useQuery({
     queryKey: courseContentKeys.full(courseId),
     queryFn: async () => {
@@ -32,14 +32,14 @@ export function useCourseContent(courseId: number) {
       )
       return data.data
     },
-    enabled: Number.isFinite(courseId),
+    enabled: courseId !== '',
   })
 }
 
 /** Generic helper to build a CRUD mutation for a content sub-resource. */
 function useContentMutation<TInput, TOutput>(
-  builder: (courseId: number, id?: number) => string,
-  courseId: number,
+  builder: (courseId: string, id?: number) => string,
+  courseId: string,
   invalidate: boolean = true,
 ) {
   const queryClient = useQueryClient()
@@ -87,7 +87,7 @@ function useContentMutation<TInput, TOutput>(
 }
 
 /** Generic delete mutation: invalidates the builder + confirms via toast. */
-function useDeleteContent(courseId: number, destroy: (courseId: number, id: number) => string) {
+function useDeleteContent(courseId: string, destroy: (courseId: string, id: number) => string) {
   const queryClient = useQueryClient()
   return useMutation<{ message: string }, Error, number>({
     mutationFn: async (id) => {
@@ -104,104 +104,212 @@ function useDeleteContent(courseId: number, destroy: (courseId: number, id: numb
   })
 }
 
-export function useCreateSection(courseId: number) {
+export function useCreateSection(courseId: string) {
   return useContentMutation<Partial<CourseSection>, CourseSection>(
     (c) => ENDPOINTS.ADMIN.CONTENT.SECTIONS.STORE(c),
     courseId,
   )
 }
 
-export function useUpdateSection(courseId: number) {
+export function useUpdateSection(courseId: string) {
   return useContentMutation<Partial<CourseSection>, CourseSection>(
     (c, id) => ENDPOINTS.ADMIN.CONTENT.SECTIONS.UPDATE(c, id!),
     courseId,
   )
 }
 
-export function useDeleteSection(courseId: number) {
+export function useDeleteSection(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.SECTIONS.DESTROY)
 }
 
-export function useCreateLesson(courseId: number) {
+export function useCreateLesson(courseId: string) {
   return useContentMutation<Partial<LessonItem>, LessonItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.LESSONS.STORE(c),
     courseId,
   )
 }
 
-export function useUpdateLesson(courseId: number) {
+export function useUpdateLesson(courseId: string) {
   return useContentMutation<Partial<LessonItem>, LessonItem>(
     (c, id) => ENDPOINTS.ADMIN.CONTENT.LESSONS.UPDATE(c, id!),
     courseId,
   )
 }
 
-export function useDeleteLesson(courseId: number) {
+export function useDeleteLesson(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.LESSONS.DESTROY)
 }
 
-export function useCreateOutcome(courseId: number) {
+export function useCreateOutcome(courseId: string) {
   return useContentMutation<{ description: string }, LearningOutcomeItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.OUTCOMES.STORE(c),
     courseId,
   )
 }
 
-export function useDeleteOutcome(courseId: number) {
+export function useUpdateOutcome(courseId: string) {
+  return useContentMutation<Partial<LearningOutcomeItem> & { id: number }, LearningOutcomeItem>(
+    (c, id) => ENDPOINTS.ADMIN.CONTENT.OUTCOMES.UPDATE(c, id!),
+    courseId,
+  )
+}
+
+export function useDeleteOutcome(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.OUTCOMES.DESTROY)
 }
 
-export function useCreateResource(courseId: number) {
+export function useCreateResource(courseId: string) {
   return useContentMutation<Partial<ResourceItem>, ResourceItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.RESOURCES.STORE(c),
     courseId,
   )
 }
 
-export function useDeleteResource(courseId: number) {
+export function useDeleteResource(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.RESOURCES.DESTROY)
 }
 
-export function useCreateQuiz(courseId: number) {
+export function useCreateQuiz(courseId: string) {
   return useContentMutation<Partial<QuizItem>, QuizItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.QUIZZES.STORE(c),
     courseId,
   )
 }
 
-export function useDeleteQuiz(courseId: number) {
+export function useDeleteQuiz(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.QUIZZES.DESTROY)
 }
 
-export function useCreateExercise(courseId: number) {
+export function useCreateExercise(courseId: string) {
   return useContentMutation<Partial<ExerciseItem>, ExerciseItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.EXERCISES.STORE(c),
     courseId,
   )
 }
 
-export function useDeleteExercise(courseId: number) {
+export function useDeleteExercise(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.EXERCISES.DESTROY)
 }
 
-export function useCreateExam(courseId: number) {
+export function useCreateExam(courseId: string) {
   return useContentMutation<Partial<ExamItem>, ExamItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.EXAMS.STORE(c),
     courseId,
   )
 }
 
-export function useDeleteExam(courseId: number) {
+export function useDeleteExam(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.EXAMS.DESTROY)
 }
 
-export function useCreateAssignment(courseId: number) {
+export function useCreateAssignment(courseId: string) {
   return useContentMutation<Partial<AssignmentItem>, AssignmentItem>(
     (c) => ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.STORE(c),
     courseId,
   )
 }
 
-export function useDeleteAssignment(courseId: number) {
+export function useDeleteAssignment(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.DESTROY)
+}
+
+export interface QuestionImportResult {
+  imported: number
+  total: number
+  errors: string[]
+}
+
+export function useImportQuestions(courseId: string) {
+  const queryClient = useQueryClient()
+  return useMutation<QuestionImportResult, Error, { kind: string; parentId: number; file: File }>({
+    mutationFn: async ({ kind, parentId, file }) => {
+      const body = new FormData()
+      body.append('file', file)
+      const { data } = await axiosInstance.post<{ data: QuestionImportResult }>(
+        ENDPOINTS.ADMIN.CONTENT.QUESTIONS_IMPORT(courseId, kind, parentId),
+        body,
+      )
+      return data.data
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) })
+      const summary =
+        result.errors.length > 0
+          ? `Imported ${result.imported} of ${result.total} questions. ${result.errors[0]}`
+          : `Imported ${result.imported} question${result.imported === 1 ? '' : 's'}.`
+      imperativeToast.show(result.errors.length > 0 ? 'warning' : 'success', summary, 8000)
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not import questions.'))
+    },
+  })
+}
+
+/** Download the fill-in Excel template as a file (authed blob download). */
+export function useQuestionsTemplate(courseId: string) {
+  return async () => {
+    const { data } = await axiosInstance.get(
+      ENDPOINTS.ADMIN.CONTENT.QUESTIONS_TEMPLATE(courseId),
+      { responseType: 'blob' },
+    )
+    const url = URL.createObjectURL(new Blob([data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'questions-template.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+}
+
+export interface ResultsImportResult {
+  imported: number
+  total: number
+  errors: string[]
+}
+
+/** Bulk-upload instructor results (exams, exercises, assignments). */
+export function useImportResults(courseId: string) {
+  const queryClient = useQueryClient()
+  return useMutation<ResultsImportResult, Error, { kind: string; parentId: number; file: File }>({
+    mutationFn: async ({ kind, parentId, file }) => {
+      const body = new FormData()
+      body.append('file', file)
+      const { data } = await axiosInstance.post<{ data: ResultsImportResult }>(
+        ENDPOINTS.ADMIN.CONTENT.RESULTS_IMPORT(courseId, kind, parentId),
+        body,
+      )
+      return data.data
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: courseContentKeys.full(courseId) })
+      const summary =
+        result.errors.length > 0
+          ? `Recorded ${result.imported} of ${result.total} results. ${result.errors[0]}`
+          : `Recorded ${result.imported} result${result.imported === 1 ? '' : 's'}.`
+      imperativeToast.show(result.errors.length > 0 ? 'warning' : 'success', summary, 8000)
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not import results.'))
+    },
+  })
+}
+
+/** Download the fill-in results template as a file (authed blob download). */
+export function useResultsTemplate(courseId: string) {
+  return async () => {
+    const { data } = await axiosInstance.get(
+      ENDPOINTS.ADMIN.CONTENT.RESULTS_TEMPLATE(courseId),
+      { responseType: 'blob' },
+    )
+    const url = URL.createObjectURL(new Blob([data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'results-template.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
 }

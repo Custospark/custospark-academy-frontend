@@ -12,7 +12,10 @@ import { enrollmentMatrix, feeAmountFor } from '../../utils/enrollmentMatrix'
 import type { CourseFee } from '../../types'
 
 interface EnrollmentActionButtonProps {
+  /** Numeric course id for API request bodies (never shown in URLs). */
   courseId: number
+  /** Course slug for display-URL links. */
+  courseSlug: string
   courseTitle: string
   enrollmentId: number
   status: string
@@ -36,6 +39,7 @@ interface EnrollmentActionButtonProps {
  */
 export function EnrollmentActionButton({
   courseId,
+  courseSlug,
   courseTitle,
   enrollmentId,
   status,
@@ -136,7 +140,7 @@ export function EnrollmentActionButton({
     case 'continue':
     default:
       return (
-        <Link to={ROUTES.APP.MY_COURSE(courseId)} className={className}>
+        <Link to={ROUTES.APP.MY_COURSE(courseSlug)} className={className}>
           <Button size={size} variant={emphasis === 'outline' ? 'outline' : 'primary'}>
             {entry.actionLabel}
             <ArrowRight className="h-4 w-4" />

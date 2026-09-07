@@ -8,28 +8,28 @@ import { ENDPOINTS } from '../endpoints'
  */
 describe('course content endpoints', () => {
   it('builds section, lesson, outcome and resource URLs', () => {
-    expect(ENDPOINTS.ADMIN.CONTENT.FULL(7)).toBe('/admin/courses/7/content')
-    expect(ENDPOINTS.ADMIN.CONTENT.SECTIONS.STORE(7)).toBe('/admin/courses/7/sections')
-    expect(ENDPOINTS.ADMIN.CONTENT.SECTIONS.UPDATE(7, 3)).toBe('/admin/courses/7/sections/3')
-    expect(ENDPOINTS.ADMIN.CONTENT.LESSONS.STORE(7)).toBe('/admin/courses/7/lessons')
-    expect(ENDPOINTS.ADMIN.CONTENT.OUTCOMES.STORE(7)).toBe('/admin/courses/7/outcomes')
-    expect(ENDPOINTS.ADMIN.CONTENT.RESOURCES.STORE(7)).toBe('/admin/courses/7/resources')
+    expect(ENDPOINTS.ADMIN.CONTENT.FULL('data-science')).toBe('/admin/courses/data-science/content')
+    expect(ENDPOINTS.ADMIN.CONTENT.SECTIONS.STORE('data-science')).toBe('/admin/courses/data-science/sections')
+    expect(ENDPOINTS.ADMIN.CONTENT.SECTIONS.UPDATE('data-science', 3)).toBe('/admin/courses/data-science/sections/3')
+    expect(ENDPOINTS.ADMIN.CONTENT.LESSONS.STORE('data-science')).toBe('/admin/courses/data-science/lessons')
+    expect(ENDPOINTS.ADMIN.CONTENT.OUTCOMES.STORE('data-science')).toBe('/admin/courses/data-science/outcomes')
+    expect(ENDPOINTS.ADMIN.CONTENT.RESOURCES.STORE('data-science')).toBe('/admin/courses/data-science/resources')
   })
 
   it('builds quiz, exercise, exam and assignment URLs', () => {
-    expect(ENDPOINTS.ADMIN.CONTENT.QUIZZES.STORE(7)).toBe('/admin/courses/7/quizzes')
-    expect(ENDPOINTS.ADMIN.CONTENT.EXERCISES.STORE(7)).toBe('/admin/courses/7/exercises')
-    expect(ENDPOINTS.ADMIN.CONTENT.EXAMS.STORE(7)).toBe('/admin/courses/7/exams')
-    expect(ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.STORE(7)).toBe('/admin/courses/7/assignments')
-    expect(ENDPOINTS.ADMIN.CONTENT.QUIZZES.DESTROY(7, 3)).toBe('/admin/courses/7/quizzes/3')
+    expect(ENDPOINTS.ADMIN.CONTENT.QUIZZES.STORE('data-science')).toBe('/admin/courses/data-science/quizzes')
+    expect(ENDPOINTS.ADMIN.CONTENT.EXERCISES.STORE('data-science')).toBe('/admin/courses/data-science/exercises')
+    expect(ENDPOINTS.ADMIN.CONTENT.EXAMS.STORE('data-science')).toBe('/admin/courses/data-science/exams')
+    expect(ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.STORE('data-science')).toBe('/admin/courses/data-science/assignments')
+    expect(ENDPOINTS.ADMIN.CONTENT.QUIZZES.DESTROY('data-science', 3)).toBe('/admin/courses/data-science/quizzes/3')
   })
 
   it('builds learner endpoints for the course player', () => {
-    expect(ENDPOINTS.LEARNER.CONTENT(7)).toBe('/courses/7/content')
-    expect(ENDPOINTS.LEARNER.PROGRESS(7)).toBe('/courses/7/progress')
-    expect(ENDPOINTS.LEARNER.MARK_LESSON(7, 3)).toBe('/courses/7/lessons/3/progress')
-    expect(ENDPOINTS.LEARNER.SUBMIT(7, 'assignment', 5)).toBe('/courses/7/submit/assignment/5')
-    expect(ENDPOINTS.LEARNER.ATTEMPT(7, 'quiz', 2)).toBe('/courses/7/attempt/quiz/2')
+    expect(ENDPOINTS.LEARNER.CONTENT('data-science')).toBe('/courses/data-science/content')
+    expect(ENDPOINTS.LEARNER.PROGRESS('data-science')).toBe('/courses/data-science/progress')
+    expect(ENDPOINTS.LEARNER.MARK_LESSON('data-science', 3)).toBe('/courses/data-science/lessons/3/progress')
+    expect(ENDPOINTS.LEARNER.SUBMIT('data-science', 'assignment', 5)).toBe('/courses/data-science/submit/assignment/5')
+    expect(ENDPOINTS.LEARNER.ATTEMPT('data-science', 'quiz', 2)).toBe('/courses/data-science/attempt/quiz/2')
   })
 
   it('builds course management and admin URLs', () => {
@@ -62,9 +62,9 @@ describe('course content endpoints', () => {
 
   it('builds schedule and certificate preview URLs', () => {
     expect(ENDPOINTS.SCHEDULES.MINE).toBe('/schedules/mine')
-    expect(ENDPOINTS.SCHEDULES.STORE(7)).toBe('/admin/courses/7/schedules')
-    expect(ENDPOINTS.SCHEDULES.UPDATE(7, 3)).toBe('/admin/courses/7/schedules/3')
-    expect(ENDPOINTS.SCHEDULES.DESTROY(7, 3)).toBe('/admin/courses/7/schedules/3')
-    expect(ENDPOINTS.CERTIFICATES.PREVIEW(7)).toBe('/courses/7/certificate-preview')
+    expect(ENDPOINTS.SCHEDULES.STORE('data-science')).toBe('/admin/courses/data-science/schedules')
+    expect(ENDPOINTS.SCHEDULES.UPDATE('data-science', 3)).toBe('/admin/courses/data-science/schedules/3')
+    expect(ENDPOINTS.SCHEDULES.DESTROY('data-science', 3)).toBe('/admin/courses/data-science/schedules/3')
+    expect(ENDPOINTS.CERTIFICATES.PREVIEW('data-science')).toBe('/courses/data-science/certificate-preview')
   })
 })

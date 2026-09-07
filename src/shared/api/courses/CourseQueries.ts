@@ -5,7 +5,7 @@ import type { Course } from '../../types'
 
 export const courseKeys = {
   all: ['courses'] as const,
-  detail: (id: number) => ['courses', id] as const,
+  detail: (id: number | string) => ['courses', id] as const,
   schedules: (id: number) => ['courses', id, 'schedules'] as const,
 }
 
@@ -31,12 +31,13 @@ export function useCourses(search?: string) {
 }
 
 export function useCourse(id: number | string) {
+  const key = String(id ?? '')
   return useQuery({
-    queryKey: courseKeys.detail(Number(id)),
+    queryKey: courseKeys.detail(key),
     queryFn: async () => {
-      const { data } = await axiosInstance.get<CourseResponse>(ENDPOINTS.COURSES.SHOW(Number(id)))
+      const { data } = await axiosInstance.get<CourseResponse>(ENDPOINTS.COURSES.SHOW(key))
       return data.data
     },
-    enabled: Number.isFinite(Number(id)),
+    enabled: key !== '',
   })
 }

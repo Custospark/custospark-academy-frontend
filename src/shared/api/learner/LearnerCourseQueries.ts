@@ -9,8 +9,8 @@ export const learnerKeys = {
   myCourses: ['learner', 'my-courses'] as const,
   payments: ['learner', 'payments'] as const,
   paymentDetail: (paymentId: number) => ['learner', 'payments', 'detail', paymentId] as const,
-  content: (courseId: number) => ['learner', 'content', courseId] as const,
-  progress: (courseId: number) => ['learner', 'progress', courseId] as const,
+  content: (courseId: string) => ['learner', 'content', courseId] as const,
+  progress: (courseId: string) => ['learner', 'progress', courseId] as const,
 }
 
 export function useMyEnrollments() {
@@ -23,7 +23,7 @@ export function useMyEnrollments() {
   })
 }
 
-export function useLearnerCourse(courseId: number) {
+export function useLearnerCourse(courseId: string) {
   return useQuery({
     queryKey: learnerKeys.content(courseId),
     queryFn: async () => {
@@ -32,18 +32,18 @@ export function useLearnerCourse(courseId: number) {
       )
       return data.data
     },
-    enabled: Number.isFinite(courseId),
+    enabled: courseId !== '',
   })
 }
 
-export function useLearnerProgress(courseId: number) {
+export function useLearnerProgress(courseId: string) {
   return useQuery({
     queryKey: learnerKeys.progress(courseId),
     queryFn: async () => {
       const { data } = await axiosInstance.get<{ data: CourseProgress }>(ENDPOINTS.LEARNER.PROGRESS(courseId))
       return data.data
     },
-    enabled: Number.isFinite(courseId),
+    enabled: courseId !== '',
   })
 }
 
@@ -94,7 +94,7 @@ export function useCompleteEnrollment() {
   })
 }
 
-export function useMarkLesson(courseId: number) {
+export function useMarkLesson(courseId: string) {
   const queryClient = useQueryClient()
 
   return useMutation<void, Error, { lessonId: number; status: string }>({
@@ -117,7 +117,7 @@ export interface SubmitResult {
   feedback: string | null
 }
 
-export function useSubmitWork(courseId: number) {
+export function useSubmitWork(courseId: string) {
   return useMutation<SubmitResult, Error, { type: string; typeId: number; content?: string; file?: File }>({
     mutationFn: async ({ type, typeId, content, file }) => {
       const body = new FormData()
@@ -139,7 +139,7 @@ export interface AttemptResult {
   is_passed: boolean
 }
 
-export function useSubmitAttempt(courseId: number) {
+export function useSubmitAttempt(courseId: string) {
   return useMutation<AttemptResult, Error, { type: string; typeId: number; answers: Record<number, string> }>({
     mutationFn: async ({ type, typeId, answers }) => {
       const { data } = await axiosInstance.post<{ data: AttemptResult }>(

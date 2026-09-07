@@ -45,7 +45,7 @@ export function AppRoutes() {
         <Route element={withSuspense(<LandingLayout />)}>
           <Route index element={withSuspense(<LandingPage />)} />
           <Route path={ROUTES.COURSES} element={withSuspense(<CoursesPage />)} />
-          <Route path="courses/:id" element={withSuspense(<CourseDetailPage />)} />
+          <Route path="courses/:slug" element={withSuspense(<CourseDetailPage />)} />
           <Route path={ROUTES.PRIVACY} element={withSuspense(<PrivacyPage />)} />
         </Route>
         <Route path={ROUTES.LOGIN} element={withSuspense(<LoginPage />)} />
@@ -59,9 +59,9 @@ export function AppRoutes() {
         <Route element={withSuspense(<AppLayout />)}>
           <Route path={ROUTES.DASHBOARD} element={withSuspense(<DashboardPage />)} />
           <Route path={ROUTES.APP.CATALOG} element={withSuspense(<CatalogPage />)} />
-          <Route path={ROUTES.APP.COURSE(':id')} element={withSuspense(<CourseDetailPage />)} />
+          <Route path={ROUTES.APP.COURSE(':slug')} element={withSuspense(<CourseDetailPage />)} />
           <Route path={ROUTES.APP.MY_COURSES} element={withSuspense(<MyCoursesPage />)} />
-          <Route path="my-courses/:id" element={withSuspense(<MyCourseDetailPage />)} />
+          <Route path="my-courses/:slug" element={withSuspense(<MyCourseDetailPage />)} />
           <Route path={ROUTES.APP.SCHEDULES} element={withSuspense(<SchedulesPage />)} />
           <Route path={ROUTES.APP.PAYMENTS} element={withSuspense(<PaymentsPage />)} />
           <Route path={ROUTES.APP.CERTIFICATES} element={withSuspense(<CertificatesPage />)} />
@@ -73,7 +73,7 @@ export function AppRoutes() {
       <Route element={<RoleAccessMiddleware module="courseManagement" />}>
         <Route element={withSuspense(<AppLayout />)}>
           <Route path={ROUTES.APP.ADMIN.COURSES} element={withSuspense(<AdminCoursesPage />)} />
-          <Route path={ROUTES.APP.ADMIN.COURSE(':id')} element={withSuspense(<CourseBuilderPage />)} />
+          <Route path={ROUTES.APP.ADMIN.COURSE(':slug')} element={withSuspense(<CourseBuilderPage />)} />
         </Route>
       </Route>
 

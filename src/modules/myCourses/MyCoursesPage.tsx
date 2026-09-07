@@ -58,7 +58,7 @@ export default function MyCoursesPage() {
                   <EnrollmentStatusBadge status={enrollment.status} />
                   <BookOpen className="h-4 w-4 text-blue-400" />
                 </div>
-                <Link to={ROUTES.APP.MY_COURSE(enrollment.course_id)}>
+                <Link to={ROUTES.APP.MY_COURSE(enrollment.course_slug ?? String(enrollment.course_id))}>
                   <h3 className="font-display text-lg font-bold text-white transition-colors group-hover:text-blue-200">
                     {enrollment.course_title}
                   </h3>
@@ -76,6 +76,7 @@ export default function MyCoursesPage() {
                 <div className="mt-4 flex items-center gap-3 border-t border-border-subtle pt-4">
                   <EnrollmentActionButton
                     courseId={enrollment.course_id}
+                    courseSlug={enrollment.course_slug ?? String(enrollment.course_id)}
                     courseTitle={enrollment.course_title ?? 'Course'}
                     enrollmentId={enrollment.id}
                     status={enrollment.status}

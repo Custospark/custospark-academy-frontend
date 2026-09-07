@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { axiosInstance } from '../../../app/api/axiosConfig'
+import { imperativeToast } from '../../../app/contexts/imperativeToast'
 import { ENDPOINTS } from '../endpoints'
 import { learnerKeys } from '../learner/LearnerCourseQueries'
 import { courseKeys } from '../courses/CourseQueries'
 import type { CourseSchedule } from '../../types'
+import { apiErrorMessage } from '../../utils/apiError'
 
 export const miscKeys = {
   certificates: ['certificates', 'mine'] as const,
   certificatePdf: (certificateId: number) => ['certificates', 'pdf', certificateId] as const,
-  certificatePreview: (courseId: number) => ['certificates', 'preview', courseId] as const,
+  certificatePreview: (courseId: string) => ['certificates', 'preview', courseId] as const,
   schedules: ['schedules'] as const,
   mySchedules: ['schedules', 'mine'] as const,
   adminEnrollments: ['admin', 'enrollments'] as const,
@@ -78,22 +80,22 @@ export function useCertificatePdf(certificateId: number | null) {
  * sheet is covered in a diagonal PREVIEW watermark, so nothing derived from the
  * blob URL can pass as a real certificate.
  */
-export function useCertificatePreview(courseId: number | null) {
+export function useCertificatePreview(courseId: string | null) {
   return useQuery({
-    queryKey: miscKeys.certificatePreview(courseId ?? 0),
+    queryKey: miscKeys.certificatePreview(courseId ?? ''),
     queryFn: async () => {
       const { data } = await axiosInstance.get<Blob>(
-        ENDPOINTS.CERTIFICATES.PREVIEW(courseId as number),
+        ENDPOINTS.CERTIFICATES.PREVIEW(courseId as string),
         { responseType: 'blob' },
       )
       return data
     },
-    enabled: courseId !== null && Number.isFinite(courseId) && courseId > 0,
+    enabled: courseId !== null && courseId !== '',
     staleTime: Infinity,
   })
 }
 
-export function useCourseSchedules(courseId: number) {
+export function useCourseSchedules(courseId: string) {
   return useQuery({
     queryKey: [...miscKeys.schedules, courseId],
     queryFn: async () => {
@@ -102,7 +104,7 @@ export function useCourseSchedules(courseId: number) {
       )
       return data.data
     },
-    enabled: Number.isFinite(courseId),
+    enabled: courseId !== '',
   })
 }
 
@@ -129,7 +131,7 @@ export interface SchedulePayload {
 export function useCreateSchedule() {
   const queryClient = useQueryClient()
 
-  return useMutation<CourseSchedule, Error, { courseId: number; payload: SchedulePayload }>({
+  return useMutation<CourseSchedule, Error, { courseId: string; payload: SchedulePayload }>({
     mutationFn: async ({ courseId, payload }) => {
       const { data } = await axiosInstance.post<{ data: CourseSchedule }>(
         ENDPOINTS.SCHEDULES.STORE(courseId),
@@ -150,7 +152,7 @@ export function useUpdateSchedule() {
   return useMutation<
     CourseSchedule,
     Error,
-    { courseId: number; scheduleId: number; payload: SchedulePayload }
+    { courseId: string; scheduleId: number; payload: SchedulePayload }
   >({
     mutationFn: async ({ courseId, scheduleId, payload }) => {
       const { data } = await axiosInstance.put<{ data: CourseSchedule }>(
@@ -169,7 +171,7 @@ export function useUpdateSchedule() {
 export function useDeleteSchedule() {
   const queryClient = useQueryClient()
 
-  return useMutation<void, Error, { courseId: number; scheduleId: number }>({
+  return useMutation<void, Error, { courseId: string; scheduleId: number }>({
     mutationFn: async ({ courseId, scheduleId }) => {
       await axiosInstance.delete(ENDPOINTS.SCHEDULES.DESTROY(courseId, scheduleId))
     },
@@ -244,4 +246,41 @@ export function useUpdateEnrollmentStatus(courseId: number) {
       }
     },
   })
+}
+
+/** Mass email to a course's learners, optionally filtered by status. */
+export function useAnnounce(courseSlug: string) {
+  return useMutation<{ sent: number }, Error, { statuses?: string[]; subject: string; body: string }>({
+    mutationFn: async (payload) => {
+      const { data } = await axiosInstance.post<{ data: { sent: number } }>(
+        ENDPOINTS.ADMIN.ANNOUNCE(courseSlug),
+        payload,
+      )
+      return data.data
+    },
+    onSuccess: (result) => {
+      imperativeToast.show('success', `Announcement sent to ${result.sent} learner${result.sent === 1 ? '' : 's'}.`)
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not send the announcement.'))
+    },
+  })
+}
+
+/** Download the learner roster (Excel or PDF) as a file (authed blob download). */
+export function useExportLearners(courseSlug: string) {
+  return async (format: 'xlsx' | 'pdf', status?: string) => {
+    const { data } = await axiosInstance.get(
+      ENDPOINTS.ADMIN.EXPORT_LEARNERS(courseSlug),
+      { responseType: 'blob', params: { format, status: status || undefined } },
+    )
+    const url = URL.createObjectURL(new Blob([data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `learners-${courseSlug}.${format}`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
 }

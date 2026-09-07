@@ -10,6 +10,7 @@ import { useToast } from '../../../app/contexts/useToast'
 interface ApplyModalProps {
   open: boolean
   onClose: () => void
+  /** Numeric course id for the enroll request body (never shown in URLs). */
   courseId: number
   courseTitle: string
   applicationFee: number

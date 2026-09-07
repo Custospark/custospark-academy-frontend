@@ -180,6 +180,7 @@ export default function CatalogPage() {
                 {enrolled ? (
                   <EnrollmentActionButton
                     courseId={course.id}
+                    courseSlug={course.slug}
                     courseTitle={course.title}
                     enrollmentId={enrolled.id}
                     status={enrolled.status}
@@ -197,7 +198,7 @@ export default function CatalogPage() {
 
               <div className="mt-4 flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
                 <Link
-                  to={ROUTES.APP.COURSE(course.id)}
+                  to={ROUTES.APP.COURSE(course.slug)}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-300 transition-colors hover:text-blue-200"
                 >
                   <Eye className="h-3.5 w-3.5" />
@@ -227,7 +228,7 @@ export default function CatalogPage() {
       />
 
       <CertificatePreviewModal
-        courseId={previewCourse?.id ?? null}
+        courseId={previewCourse?.slug ?? null}
         courseTitle={previewCourse?.title ?? ''}
         onClose={() => setPreviewCourse(null)}
       />
