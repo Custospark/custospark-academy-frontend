@@ -81,6 +81,7 @@ export default function MyCoursesPage() {
                     enrollmentId={enrollment.id}
                     status={enrollment.status}
                     fees={enrollment.fees}
+                    window={{ opens_at: enrollment.enrollment_opens_at, closes_at: enrollment.enrollment_closes_at }}
                     size="sm"
                     onChanged={refetch}
                   />

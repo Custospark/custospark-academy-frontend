@@ -9,6 +9,7 @@ import { usePayFee } from '../../api/learner/LearnerCourseQueries'
 import { useIssueCertificate } from '../../api/misc/MiscQueries'
 import { ROUTES } from '../../../app/routes/constants/shared.paths'
 import { enrollmentMatrix, feeAmountFor } from '../../utils/enrollmentMatrix'
+import { windowLabel, windowState } from '../../utils/assessmentWindows'
 import type { CourseFee } from '../../types'
 
 interface EnrollmentActionButtonProps {
@@ -20,6 +21,8 @@ interface EnrollmentActionButtonProps {
   enrollmentId: number
   status: string
   fees?: CourseFee[] | null
+  /** Enrollment window: gates new enrollments only, never enrolled learners. */
+  window?: { opens_at: string | null; closes_at: string | null } | null
 
   /** Called after a payment or re-apply completes so lists can refetch. */
   onChanged?: () => void
@@ -44,12 +47,13 @@ export function EnrollmentActionButton({
   enrollmentId,
   status,
   fees,
+  window,
   onChanged,
   emphasis = 'primary',
   size = 'md',
   className,
 }: EnrollmentActionButtonProps) {
-  const entry = enrollmentMatrix(status, fees)
+  const entry = enrollmentMatrix(status, fees, window)
   const [payFee, setPayFee] = useState<PaymentFeeType | null>(null)
   const [reapplying, setReapplying] = useState(false)
 
@@ -139,6 +143,15 @@ export function EnrollmentActionButton({
 
     case 'continue':
     default:
+      // A null action (e.g. enrollment closed) renders a disabled button that
+      // states the reason - never a link that goes nowhere.
+      if (entry.action === null) {
+        return (
+          <Button size={size} variant={emphasis === 'outline' ? 'outline' : 'primary'} className={className} disabled>
+            {entry.actionLabel}
+          </Button>
+        )
+      }
       return (
         <Link to={ROUTES.APP.MY_COURSE(courseSlug)} className={className}>
           <Button size={size} variant={emphasis === 'outline' ? 'outline' : 'primary'}>
@@ -162,6 +175,64 @@ export const EnrollmentStatusBadge = ({
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${entry.badgeClass} ${className ?? ''}`}>
       {entry.badgeLabel}
     </span>
+  )
+}
+
+/** Enrollment window line for course cards ("Enrollment open till ..."). Null when always open. */
+export function EnrollmentWindowLine({
+  opensAt,
+  closesAt,
+  className,
+}: {
+  opensAt: string | null
+  closesAt: string | null
+  className?: string
+}) {
+  const label = windowLabel(opensAt, closesAt)
+  if (!label) return null
+  return (
+    <p className={`text-xs text-text-muted ${className ?? ''}`}>
+      Enrollment {label.charAt(0).toLowerCase() + label.slice(1)}
+    </p>
+  )
+}
+
+interface EnrollButtonProps {
+  opensAt: string | null
+  closesAt: string | null
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
+  onEnroll: () => void
+}
+
+/**
+ * The pre-enrollment button: Enroll when open, otherwise a disabled button
+ * stating exactly why (closed date / opening date). Mirrors the matrix gate.
+ */
+export function EnrollButton({ opensAt, closesAt, size = 'sm', className, onEnroll }: EnrollButtonProps) {
+  const state = windowState(opensAt, closesAt)
+  if (state === 'closed') {
+    return (
+      <Button size={size} className={className} disabled>
+        Enrollment closed
+      </Button>
+    )
+  }
+  if (state === 'upcoming') {
+    const when = opensAt
+      ? new Date(opensAt).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })
+      : ''
+    return (
+      <Button size={size} className={className} disabled>
+        {`Opens ${when}`}
+      </Button>
+    )
+  }
+  return (
+    <Button size={size} className={className} onClick={onEnroll}>
+      Enroll
+      <ArrowRight className="h-4 w-4" />
+    </Button>
   )
 }
 

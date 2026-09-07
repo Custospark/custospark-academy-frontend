@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
   BookOpen,
   Clock,
   Eye,
@@ -14,8 +13,7 @@ import { useCourses } from '../../shared/api/courses/CourseQueries'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
 import { PageHeader } from '../../shared/components/layout/PageHeader'
 import { SearchInput } from '../../shared/components/inputs/SearchInput'
-import { Button } from '../../shared/components/buttons/Button'
-import { EnrollmentActionButton, EnrollmentStatusBadge } from '../../shared/components/buttons/EnrollmentActionButton'
+import { EnrollButton, EnrollmentActionButton, EnrollmentStatusBadge, EnrollmentWindowLine } from '../../shared/components/buttons/EnrollmentActionButton'
 import { ApplyModal } from '../../shared/components/modals/ApplyModal'
 import { CertificatePreviewModal } from '../../shared/components/certificates/CertificatePreviewModal'
 import { deliveryInfo } from '../../shared/utils/deliveryMode'
@@ -185,16 +183,24 @@ export default function CatalogPage() {
                     enrollmentId={enrolled.id}
                     status={enrolled.status}
                     fees={course.fees}
+                    window={{ opens_at: course.enrollment_opens_at, closes_at: course.enrollment_closes_at }}
                     size="sm"
                     onChanged={refresh}
                   />
                 ) : (
-                  <Button size="sm" onClick={() => setApplyCourse(course)}>
-                    Enroll
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <EnrollButton
+                    opensAt={course.enrollment_opens_at}
+                    closesAt={course.enrollment_closes_at}
+                    onEnroll={() => setApplyCourse(course)}
+                  />
                 )}
               </div>
+
+              <EnrollmentWindowLine
+                opensAt={course.enrollment_opens_at}
+                closesAt={course.enrollment_closes_at}
+                className="mt-2"
+              />
 
               <div className="mt-4 flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
                 <Link

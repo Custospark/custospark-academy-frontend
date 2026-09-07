@@ -137,6 +137,8 @@ export interface Course {
   enrollment_summary?: CourseEnrollmentSummary | null
   start_date: string | null
   end_date: string | null
+  enrollment_opens_at: string | null
+  enrollment_closes_at: string | null
   is_self_paced: boolean
   delivery_mode: 'live' | 'self_paced' | 'hybrid'
   level: 'beginner' | 'intermediate' | 'advanced'
@@ -165,6 +167,8 @@ export interface Enrollment {
   course_id: number
   course_slug: string | null
   course_title: string | null
+  enrollment_opens_at: string | null
+  enrollment_closes_at: string | null
   user_id: number
   user_name: string | null
   status: string

@@ -19,6 +19,8 @@ import { useAdminCourses } from '../../../shared/api/admin/AdminQueries'
 import { axiosInstance } from '../../../app/api/axiosConfig'
 import { ENDPOINTS } from '../../../shared/api/endpoints'
 import { apiErrorMessage } from '../../../shared/utils/apiError'
+import { useToast } from '../../../app/contexts/useToast'
+import { fromInputDateTime, toInputDateTime } from '../../../shared/utils/assessmentWindows'
 import { ROUTES } from '../../../app/routes/constants/shared.paths'
 import type { Course } from '../../../shared/types'
 
@@ -37,6 +39,8 @@ interface CourseForm {
   application_fee: string
   tuition_fee: string
   certificate_fee: string
+  enrollment_opens_at: string
+  enrollment_closes_at: string
 }
 
 const EMPTY_FORM: CourseForm = {
@@ -54,6 +58,8 @@ const EMPTY_FORM: CourseForm = {
   application_fee: '',
   tuition_fee: '',
   certificate_fee: '',
+  enrollment_opens_at: '',
+  enrollment_closes_at: '',
 }
 
 export default function AdminCoursesPage() {
@@ -65,6 +71,7 @@ export default function AdminCoursesPage() {
   const [form, setForm] = useState<CourseForm>(EMPTY_FORM)
   const [formError, setFormError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const { data: courses, isPending, isError, refetch } = useAdminCourses()
@@ -87,8 +94,9 @@ export default function AdminCoursesPage() {
   }
 
   function openEdit(course: Course) {
-    const feeValue = (type: string) =>
-      String(course.fees.find((f) => f.fee_type === type)?.amount ?? '')
+    try {
+      const feeValue = (type: string) =>
+        String(course.fees.find((f) => f.fee_type === type)?.amount ?? '')
     setForm({
       title: course.title,
       description: course.description ?? '',
@@ -104,9 +112,14 @@ export default function AdminCoursesPage() {
       application_fee: feeValue('application'),
       tuition_fee: feeValue('tuition'),
       certificate_fee: feeValue('certificate'),
+      enrollment_opens_at: toInputDateTime(course.enrollment_opens_at),
+      enrollment_closes_at: toInputDateTime(course.enrollment_closes_at),
     })
     setFormError(null)
     setEditCourse(course)
+    } catch (err) {
+      showToast('error', apiErrorMessage(err, 'Could not open the editor.'))
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -131,6 +144,8 @@ export default function AdminCoursesPage() {
         application_fee: form.application_fee ? Number(form.application_fee) : 0,
         tuition_fee: form.tuition_fee ? Number(form.tuition_fee) : 0,
         certificate_fee: form.certificate_fee ? Number(form.certificate_fee) : 0,
+        enrollment_opens_at: fromInputDateTime(form.enrollment_opens_at),
+        enrollment_closes_at: fromInputDateTime(form.enrollment_closes_at),
       }
 
       if (editCourse) {
@@ -145,6 +160,7 @@ export default function AdminCoursesPage() {
         )
         refetch()
         setShowCreate(false)
+        showToast('success', 'Course created.')
         navigate(ROUTES.APP.ADMIN.COURSE(data.data.slug))
         setSaving(false)
         return
@@ -152,8 +168,10 @@ export default function AdminCoursesPage() {
 
       refetch()
       setEditCourse(null)
+      showToast('success', 'Course updated.')
     } catch (err) {
       setFormError(apiErrorMessage(err, 'Could not save course.'))
+      showToast('error', apiErrorMessage(err, 'Could not save course.'))
     } finally {
       setSaving(false)
     }
@@ -439,6 +457,24 @@ export default function AdminCoursesPage() {
               <option value="archived">Archived</option>
             </select>
           </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Enrollment opens at (optional)"
+              type="datetime-local"
+              value={form.enrollment_opens_at}
+              onChange={(e) => setForm((f) => ({ ...f, enrollment_opens_at: e.target.value }))}
+            />
+            <Input
+              label="Enrollment closes at (optional)"
+              type="datetime-local"
+              value={form.enrollment_closes_at}
+              onChange={(e) => setForm((f) => ({ ...f, enrollment_closes_at: e.target.value }))}
+            />
+          </div>
+          <p className="-mt-2 text-xs text-text-muted">
+            Empty means always open. Past the closing date, nobody new can enroll - learners already in keep full access.
+          </p>
 
           <div className="flex justify-end gap-3 pt-1">
             <Button

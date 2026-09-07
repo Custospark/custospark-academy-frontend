@@ -1,4 +1,5 @@
 import type { CourseFee } from '../types'
+import { windowState } from './assessmentWindows'
 
 export type EnrollmentStatus =
   | 'applied'
@@ -141,7 +142,39 @@ export const WAIVED_MATRIX: Partial<Record<EnrollmentStatus, Partial<EnrollmentM
   },
 }
 
-export function enrollmentMatrix(status: string | null, fees?: CourseFee[] | null): EnrollmentMatrixEntry {
+export function enrollmentMatrix(
+  status: string | null,
+  fees?: CourseFee[] | null,
+  window?: { opens_at: string | null; closes_at: string | null } | null,
+): EnrollmentMatrixEntry {
+  // Enrollment window gates NEW enrollments (and re-applications) only.
+  // Learners who are already enrolled are never blocked by it.
+  if (window && (status === null || status === 'cancelled')) {
+    const state = windowState(window.opens_at, window.closes_at)
+    if (state === 'closed') {
+      const when = window.closes_at
+        ? ` on ${new Date(window.closes_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}`
+        : ''
+      return {
+        badgeLabel: 'Enrollment closed',
+        badgeClass: 'bg-text-muted/15 text-text-muted',
+        actionLabel: 'Enrollment closed',
+        action: null,
+        note: `Enrollment for this course closed${when}.`,
+      }
+    }
+    if (state === 'upcoming' && window.opens_at) {
+      const when = new Date(window.opens_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })
+      return {
+        badgeLabel: `Opens ${when}`,
+        badgeClass: 'bg-blue-500/15 text-blue-300',
+        actionLabel: `Opens ${when}`,
+        action: null,
+        note: `Enrollment opens on ${when}. Check back then.`,
+      }
+    }
+  }
+
   const base = ENROLLMENT_MATRIX[status as EnrollmentStatus]
 
   if (base) {

@@ -16,8 +16,10 @@ import {
 import { useCourse } from '../../shared/api/courses/CourseQueries'
 import { Button } from '../../shared/components/buttons/Button'
 import {
+  EnrollButton,
   EnrollmentActionButton,
   EnrollmentStatusBadge,
+  EnrollmentWindowLine,
 } from '../../shared/components/buttons/EnrollmentActionButton'
 import { ApplyModal } from '../../shared/components/modals/ApplyModal'
 import { CertificatePreviewModal } from '../../shared/components/certificates/CertificatePreviewModal'
@@ -314,17 +316,26 @@ export default function CourseDetailPage() {
                     enrollmentId={enrolled.id}
                     status={enrolled.status}
                     fees={course.fees}
+                    window={{ opens_at: course.enrollment_opens_at, closes_at: course.enrollment_closes_at }}
                     size="lg"
                     className="w-full"
                   />
                 </div>
               ) : (
                 <div>
+                  <EnrollmentWindowLine
+                    opensAt={course.enrollment_opens_at}
+                    closesAt={course.enrollment_closes_at}
+                    className="mb-3"
+                  />
                   {isAuthenticated ? (
-                    <Button size="lg" className="w-full" onClick={() => setApplyOpen(true)}>
-                      Enroll now
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                    <EnrollButton
+                      size="lg"
+                      className="w-full"
+                      opensAt={course.enrollment_opens_at}
+                      closesAt={course.enrollment_closes_at}
+                      onEnroll={() => setApplyOpen(true)}
+                    />
                   ) : (
                     <>
                       <Link to={ROUTES.REGISTER} className="block">

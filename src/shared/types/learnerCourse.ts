@@ -101,6 +101,8 @@ export interface LearnerCourse {
   id: number
   title: string
   slug: string
+  enrollment_opens_at: string | null
+  enrollment_closes_at: string | null
   description: string | null
   category: string | null
   level: string

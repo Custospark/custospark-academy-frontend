@@ -131,6 +131,8 @@ export interface CourseFull {
   is_self_paced: boolean
   start_date: string | null
   end_date: string | null
+  enrollment_opens_at: string | null
+  enrollment_closes_at: string | null
   sections: CourseSection[]
   learning_outcomes: LearningOutcomeItem[]
   resources: ResourceItem[]
