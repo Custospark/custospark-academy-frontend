@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ChevronDown, FolderPlus, NotebookPen, Pencil, Plus, Trash2, Video, FileText } from 'lucide-react'
+import { ChevronDown, FolderPlus, NotebookPen, Pencil, Plus, Trash2, Video, FileText, BookOpen } from 'lucide-react'
 import type { CourseFull, CourseSection, LessonItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
@@ -13,7 +13,7 @@ import {
   useDeleteLesson,
 } from '../../../../shared/api/courses/CourseContentQueries'
 
-const CONTENT_TYPE_ICON = { video: Video, text: FileText, article: FileText, embed: FileText }
+const CONTENT_TYPE_ICON = { video: Video, text: FileText, article: FileText, embed: FileText, book: BookOpen }
 
 export function CurriculumTab({ course }: { course: CourseFull }) {
   const [openSection, setOpenSection] = useState<number | null>(course.sections[0]?.id ?? null)
@@ -263,6 +263,7 @@ function AddLessonModal({
     video_url: '',
     video_source: 'upload' as 'upload' | 'link',
     video_file: null as File | null,
+    book_file: null as File | null,
     duration_minutes: '',
     is_free_preview: false,
   })
@@ -279,6 +280,7 @@ function AddLessonModal({
         video_url: lesson.video_url ?? '',
         video_source: lesson.video_path ? 'upload' : 'link',
         video_file: null,
+        book_file: null,
         duration_minutes: lesson.duration_minutes ? String(lesson.duration_minutes) : '',
         is_free_preview: lesson.is_free_preview,
       })
@@ -290,6 +292,7 @@ function AddLessonModal({
         video_url: '',
         video_source: 'upload',
         video_file: null,
+        book_file: null,
         duration_minutes: '',
         is_free_preview: false,
       })
@@ -324,6 +327,10 @@ function AddLessonModal({
       setLessonError('Choose a video file to upload or switch to link.')
       return
     }
+    if (form.content_type === 'book' && !form.book_file && !editing?.book_path) {
+      setLessonError('Choose a book file (PDF/EPUB) to upload.')
+      return
+    }
     const payload = {
       section_id: modal.sectionId,
       title: form.title.trim(),
@@ -336,6 +343,7 @@ function AddLessonModal({
             ? (editing.video_url ?? null)
             : null,
       video: form.content_type === 'video' && form.video_source === 'upload' ? form.video_file ?? undefined : undefined,
+      book: form.content_type === 'book' ? form.book_file ?? undefined : undefined,
       duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null,
       is_free_preview: form.is_free_preview,
     }
@@ -379,7 +387,7 @@ function AddLessonModal({
         <div>
           <label className="mb-1.5 block text-sm font-medium text-text-secondary">Content type</label>
           <div className="flex flex-wrap gap-2">
-              {(['text', 'video', 'article', 'embed'] as const).map((type) => (
+              {(['text', 'video', 'article', 'embed', 'book'] as const).map((type) => (
                 <button
                   key={type}
                   type="button"
@@ -387,10 +395,11 @@ function AddLessonModal({
                     setForm((f) => ({
                       ...f,
                       content_type: type,
-                      // Stale values from another type must never leak into the payload.
-                      content: type === 'text' || type === 'article' ? f.content : '',
+                      // Stale file/link values from another type must never leak.
+                      // Text is kept: it serves as content or description everywhere.
                       video_url: type === 'video' || type === 'embed' ? f.video_url : '',
                       video_file: type === 'video' ? f.video_file : null,
+                      book_file: type === 'book' ? f.book_file : null,
                     }))
                   }
                 className={
@@ -490,16 +499,44 @@ function AddLessonModal({
           />
         )}
 
-        {(form.content_type === 'text' || form.content_type === 'article') && (
+        {/* Description rides along every lesson type - never hidden. */}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+            {form.content_type === 'text' || form.content_type === 'article'
+              ? 'Content'
+              : 'Description'}
+          </label>
+          <textarea
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+            rows={form.content_type === 'video' || form.content_type === 'book' ? 3 : 6}
+            placeholder={
+              form.content_type === 'video' || form.content_type === 'book'
+                ? 'Describe this lesson for learners...'
+                : 'Write the lesson content here...'
+            }
+            className="w-full rounded-lg border border-border-default bg-surface-input px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-border-focus/30"
+          />
+        </div>
+
+        {form.content_type === 'book' && (
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-text-secondary">Content</label>
-            <textarea
-              value={form.content}
-              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              rows={6}
-              placeholder="Write the lesson content here..."
-              className="w-full rounded-lg border border-border-default bg-surface-input px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-border-focus/30"
+            <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+              Book file (PDF/EPUB, max 20MB)
+            </label>
+            <input
+              type="file"
+              accept=".pdf,.epub"
+              onChange={(e) => setForm((f) => ({ ...f, book_file: e.target.files?.[0] ?? null }))}
+              className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
             />
+            <p className="mt-1.5 text-xs text-text-muted">
+              {form.book_file
+                ? `Selected: ${form.book_file.name}`
+                : editing?.book_path
+                  ? 'A book is already attached - choosing one replaces it.'
+                  : 'Learners can read or download the book from the lesson.'}
+            </p>
           </div>
         )}
 

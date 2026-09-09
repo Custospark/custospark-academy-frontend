@@ -14,10 +14,11 @@ export interface LessonItem {
   course_id: number
   section_id: number | null
   title: string
-  content_type: 'text' | 'video' | 'article' | 'embed'
+  content_type: 'text' | 'video' | 'article' | 'embed' | 'book'
   content: string | null
   video_url: string | null
   video_path: string | null
+  book_path: string | null
   duration_minutes: number | null
   sort_order: number
   is_free_preview: boolean

@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { ChevronDown, CheckCircle2, Circle, FileText, PlayCircle } from 'lucide-react'
+import { BookOpen, ChevronDown, CheckCircle2, Circle, Download, FileText, PlayCircle } from 'lucide-react'
 import type { LearnerCourse, LearnerLesson } from '../../shared/types/learnerCourse'
 import { Button } from '../../shared/components/buttons/Button'
 import { Modal } from '../../shared/components/modals/Modal'
 import { useMarkLesson } from '../../shared/api/learner/LearnerCourseQueries'
+import { useToast } from '../../app/contexts/useToast'
+import { apiErrorMessage } from '../../shared/utils/apiError'
 import { storageUrl } from '../../shared/utils/storageUrl'
 import { cn } from '../../shared/utils/cn'
 
@@ -41,6 +43,8 @@ export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; 
                     >
                       {lesson.content_type === 'video' ? (
                         <PlayCircle className="h-4 w-4 shrink-0 text-blue-400" />
+                      ) : lesson.content_type === 'book' ? (
+                        <BookOpen className="h-4 w-4 shrink-0 text-blue-400" />
                       ) : (
                         <FileText className="h-4 w-4 shrink-0 text-blue-400" />
                       )}
@@ -79,7 +83,13 @@ function LessonModal({
   courseId: string
   onClose: () => void
 }) {
-  const markLesson = useMarkLesson(courseId)
+  const startLesson = useMarkLesson(courseId)
+  const completeLesson = useMarkLesson(courseId)
+  const { showToast } = useToast()
+  const [started, setStarted] = useState(false)
+  const bookUrl = storageUrl(lesson?.book_path)
+  const hasMedia =
+    !!storageUrl(lesson?.video_path) || !!lesson?.video_url || !!bookUrl || !!lesson?.content
 
   return (
     <Modal
@@ -121,24 +131,65 @@ function LessonModal({
             </div>
           )}
 
-          {!lesson.video_url && !lesson.content && (
+          {bookUrl && (
+            <a
+              href={bookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-xl border border-blue-500/40 bg-blue-500/10 px-4 py-3 transition-colors hover:border-blue-500"
+            >
+              <BookOpen className="h-5 w-5 shrink-0 text-blue-300" />
+              <span className="text-sm font-medium text-white">Read / download book</span>
+              <Download className="ml-auto h-4 w-4 text-blue-300" />
+            </a>
+          )}
+
+          {!hasMedia && (
             <p className="rounded-xl border border-border-subtle bg-surface-section p-4 text-sm text-text-muted">
               This lesson has no content yet.
             </p>
           )}
 
           <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-4">
-            <Button onClick={() => markLesson.mutate({ lessonId: lesson.id, status: 'in_progress' })}>
-              Start lesson
+            <Button
+              onClick={() =>
+                startLesson.mutate(
+                  { lessonId: lesson.id, status: 'in_progress' },
+                  {
+                    onSuccess: () => {
+                      setStarted(true)
+                      showToast('success', 'Lesson started.')
+                    },
+                    onError: (err) => showToast('error', apiErrorMessage(err, 'Could not start the lesson.')),
+                  },
+                )
+              }
+              loading={startLesson.isPending}
+              disabled={startLesson.isPending || started}
+              variant={started ? 'outline' : 'primary'}
+            >
+              {started ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Started
+                </>
+              ) : (
+                'Start lesson'
+              )}
             </Button>
             <Button
               variant="secondary"
               onClick={() =>
-                markLesson.mutate(
+                completeLesson.mutate(
                   { lessonId: lesson.id, status: 'completed' },
-                  { onSuccess: onClose },
+                  {
+                    onSuccess: onClose,
+                    onError: (err) => showToast('error', apiErrorMessage(err, 'Could not complete the lesson.')),
+                  },
                 )
               }
+              loading={completeLesson.isPending}
+              disabled={completeLesson.isPending}
             >
               <CheckCircle2 className="h-4 w-4" />
               Mark as complete
