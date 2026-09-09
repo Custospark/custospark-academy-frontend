@@ -114,7 +114,7 @@ export default function MyCourseDetailPage() {
             </div>
           </div>
 
-          <CompletionCard progress={progress} enrollment={enrollment} />
+          <CompletionCard progress={progress} enrollment={enrollment} deliveryMode={course?.delivery_mode} />
 
           {/* Learning outcomes */}
           {course.learning_outcomes.length > 0 && (

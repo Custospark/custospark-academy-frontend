@@ -345,11 +345,19 @@ function AddLessonModal({
         <div>
           <label className="mb-1.5 block text-sm font-medium text-text-secondary">Content type</label>
           <div className="flex flex-wrap gap-2">
-            {(['text', 'video', 'article', 'embed'] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, content_type: type }))}
+              {(['text', 'video', 'article', 'embed'] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      content_type: type,
+                      // Stale values from another type must never leak into the payload.
+                      content: type === 'text' || type === 'article' ? f.content : '',
+                      video_url: type === 'video' || type === 'embed' ? f.video_url : '',
+                    }))
+                  }
                 className={
                   form.content_type === type
                     ? 'rounded-lg bg-blue-500/15 px-3 py-1.5 text-sm font-semibold text-blue-300'
@@ -368,6 +376,15 @@ function AddLessonModal({
             value={form.video_url}
             onChange={(e) => setForm((f) => ({ ...f, video_url: e.target.value }))}
             placeholder="https://youtube.com/watch?v=..."
+          />
+        )}
+
+        {form.content_type === 'embed' && (
+          <Input
+            label="Embed URL or code"
+            value={form.video_url}
+            onChange={(e) => setForm((f) => ({ ...f, video_url: e.target.value }))}
+            placeholder="https://... or <iframe ...></iframe>"
           />
         )}
 

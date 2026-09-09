@@ -14,6 +14,8 @@ const GRADING_LABELS: Record<string, string> = {
 interface CompletionCardProps {
   progress?: CourseProgress
   enrollment?: Enrollment
+  /** Course delivery mode fallback (manifest also carries it). */
+  deliveryMode?: string
 }
 
 /**
@@ -22,10 +24,10 @@ interface CompletionCardProps {
  * "Mark course complete" action; live (instructor-led) courses are closed
  * ONLY by the instructor, so learners see that instead of a button.
  */
-export function CompletionCard({ progress, enrollment }: CompletionCardProps) {
+export function CompletionCard({ progress, enrollment, deliveryMode }: CompletionCardProps) {
   const complete = useCompleteEnrollment()
   const manifest = progress?.completion
-  const isLive = manifest?.delivery_mode === 'live'
+  const isLive = manifest?.delivery_mode === 'live' || deliveryMode === 'live'
 
   if (!manifest) {
     return (

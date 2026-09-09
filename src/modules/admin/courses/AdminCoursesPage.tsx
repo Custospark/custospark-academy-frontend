@@ -30,6 +30,7 @@ interface CourseForm {
   course_code: string
   category: string
   level: string
+  delivery_mode: string
   language: string
   duration_hours: string
   prerequisites: string
@@ -49,6 +50,7 @@ const EMPTY_FORM: CourseForm = {
   course_code: '',
   category: '',
   level: 'beginner',
+  delivery_mode: 'self_paced',
   language: 'en',
   duration_hours: '',
   prerequisites: '',
@@ -103,6 +105,7 @@ export default function AdminCoursesPage() {
       course_code: course.course_code ?? '',
       category: course.category ?? '',
       level: course.level ?? 'beginner',
+      delivery_mode: course.delivery_mode ?? 'self_paced',
       language: course.language ?? 'en',
       duration_hours: course.duration_hours ? String(course.duration_hours) : '',
       prerequisites: course.prerequisites ?? '',
@@ -133,6 +136,7 @@ export default function AdminCoursesPage() {
         category: form.category.trim() || null,
         course_code: form.course_code.trim() || null,
         level: form.level,
+        delivery_mode: form.delivery_mode,
         language: form.language,
         duration_hours: form.duration_hours ? Number(form.duration_hours) : null,
         prerequisites: form.prerequisites.trim() || null,
@@ -367,6 +371,19 @@ export default function AdminCoursesPage() {
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
               </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-text-secondary">Delivery mode</label>
+              <select
+                value={form.delivery_mode}
+                onChange={(e) => setForm((f) => ({ ...f, delivery_mode: e.target.value }))}
+                className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-primary focus:border-border-focus focus:outline-none"
+              >
+                <option value="self_paced">Self-paced</option>
+                <option value="live">Live (instructor-led)</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+              <p className="mt-1.5 text-xs text-text-muted">Live courses are completed by the instructor, never the learner.</p>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-text-secondary">Language</label>

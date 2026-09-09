@@ -8,6 +8,7 @@ import { Button } from '../../../shared/components/buttons/Button'
 import { ConfirmDialog } from '../../../shared/components/modals/ConfirmDialog'
 import { SearchInput } from '../../../shared/components/inputs/SearchInput'
 import { useToast } from '../../../app/contexts/useToast'
+import { useAppSelector } from '../../../app/store/hooks/useApp'
 import { apiErrorMessage } from '../../../shared/utils/apiError'
 
 const STATUS_STYLE: Record<string, string> = {
@@ -54,6 +55,8 @@ export default function AdminEnrollmentsPage() {
   const updateStatus = useUpdateEnrollmentStatus(0)
   const [confirm, setConfirm] = useState<{ id: number; action: 'admit' | 'reject' } | null>(null)
   const { showToast } = useToast()
+  // Admitting/rejecting is an admin-only decision - instructors never see the buttons.
+  const isAdmin = useAppSelector((s) => s.auth.user?.role) === 'admin'
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(searchInput.trim()), 300)
@@ -213,7 +216,7 @@ export default function AdminEnrollmentsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        {isPendingReview && (
+                        {isPendingReview && isAdmin && (
                           <>
                             <Button
                               size="sm"
