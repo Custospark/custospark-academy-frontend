@@ -101,6 +101,12 @@ function LessonModal({
     >
       {lesson && (
         <div className="space-y-4">
+          {lesson.content && (
+            <div className="whitespace-pre-wrap rounded-xl border border-border-subtle bg-surface-section p-4 text-sm leading-relaxed text-text-secondary">
+              {lesson.content}
+            </div>
+          )}
+
           {storageUrl(lesson.video_path) ? (
             <div className="overflow-hidden rounded-xl border border-border-subtle bg-black">
               <video
@@ -123,12 +129,6 @@ function LessonModal({
                 />
               </div>
             )
-          )}
-
-          {lesson.content && (
-            <div className="whitespace-pre-wrap rounded-xl border border-border-subtle bg-surface-section p-4 text-sm leading-relaxed text-text-secondary">
-              {lesson.content}
-            </div>
           )}
 
           {bookUrl && (
