@@ -53,9 +53,20 @@ export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; 
                         <div className="text-xs text-text-muted">
                           {lesson.content_type}
                           {lesson.duration_minutes ? ` · ${lesson.duration_minutes} min` : ''}
+                          {lesson.progress_status === 'completed'
+                            ? ' · completed'
+                            : lesson.progress_status === 'in_progress'
+                              ? ' · in progress'
+                              : ''}
                         </div>
                       </div>
-                      <Circle className="h-4 w-4 shrink-0 text-text-muted" />
+                      {lesson.progress_status === 'completed' ? (
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-semantic-success" />
+                      ) : lesson.progress_status === 'in_progress' ? (
+                        <PlayCircle className="h-4 w-4 shrink-0 text-academy-amber" />
+                      ) : (
+                        <Circle className="h-4 w-4 shrink-0 text-text-muted" />
+                      )}
                     </button>
                   ))
                 )}
