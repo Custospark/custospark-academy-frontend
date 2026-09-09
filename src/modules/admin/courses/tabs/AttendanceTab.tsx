@@ -95,7 +95,7 @@ export function AttendanceTab({ course }: { course: CourseFull }) {
         <div className="rounded-2xl border border-dashed border-border-strong bg-surface-card p-10 text-center">
           <Users className="mx-auto h-10 w-10 text-blue-400" />
           <p className="mt-3 text-sm text-text-secondary">
-            No admitted learners on this course yet. Only admitted learners appear on the register.
+            No learners with a live enrollment on this course yet.
           </p>
         </div>
       )}
