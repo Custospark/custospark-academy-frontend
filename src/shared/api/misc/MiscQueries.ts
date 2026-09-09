@@ -201,14 +201,16 @@ export interface AdminEnrollment {
 }
 
 export interface AdminEnrollmentFilters {
-  courseId?: number | null
+  courseId?: string | number | null
   status?: string
   q?: string
 }
 
 export function useAdminEnrollments(filters?: AdminEnrollmentFilters) {
   const params: Record<string, string> = {}
-  if (filters?.courseId && Number.isFinite(filters.courseId)) params.course_id = String(filters.courseId)
+  if (filters?.courseId !== undefined && filters?.courseId !== null && filters?.courseId !== '') {
+    params.course_id = String(filters.courseId)
+  }
   if (filters?.status) params.status = filters.status
   if (filters?.q?.trim()) params.q = filters.q.trim()
 
@@ -268,8 +270,7 @@ export function useAnnounce(courseSlug: string) {
 }
 
 /** Download the learner roster (Excel or PDF) as a file (authed blob download). */
-export function useExportLearners(courseSlug: string) {
-  return async (format: 'xlsx' | 'pdf', status?: string) => {
+export function useExportLearners(courseSlug: string) {  return async (format: 'xlsx' | 'pdf', status?: string) => {
     const { data } = await axiosInstance.get(
       ENDPOINTS.ADMIN.EXPORT_LEARNERS(courseSlug),
       { responseType: 'blob', params: { format, status: status || undefined } },
@@ -283,4 +284,28 @@ export function useExportLearners(courseSlug: string) {
     link.remove()
     setTimeout(() => URL.revokeObjectURL(url), 5000)
   }
+}
+/** Instructor/admin closes a whole course at once (live cohorts). */
+export function useCompleteLearners(courseSlug: string) {
+  const queryClient = useQueryClient()
+  return useMutation<{ completed: number[]; count: number }, Error>({
+    mutationFn: async () => {
+      const { data } = await axiosInstance.post<{ data: { completed: number[]; count: number } }>(
+        ENDPOINTS.ADMIN.COMPLETE_LEARNERS(courseSlug),
+      )
+      return data.data
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: miscKeys.adminEnrollments })
+      imperativeToast.show(
+        'success',
+        result.count === 0
+          ? 'No learners were ready to complete.'
+          : `Marked ${result.count} learner${result.count === 1 ? '' : 's'} complete.`,
+      )
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not complete learners.'))
+    },
+  })
 }

@@ -69,6 +69,7 @@ export const ENDPOINTS = {
     REJECT: (id: number) => `/admin/enrollments/${id}/reject`,
     ANNOUNCE: (courseId: string) => `/admin/courses/${courseId}/announce`,
     EXPORT_LEARNERS: (courseId: string) => `/admin/courses/${courseId}/learners/export`,
+    COMPLETE_LEARNERS: (courseId: string) => `/admin/courses/${courseId}/complete-learners`,
     INSTRUCTORS: {
       INDEX: '/admin/instructors',
       STORE: '/admin/instructors',

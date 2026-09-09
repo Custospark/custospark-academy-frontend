@@ -18,13 +18,14 @@ interface CompletionCardProps {
 
 /**
  * Shows the course completion manifest (every required item type with its
- * count, progress and grading owner) and, when everything is done, the
- * "Mark course complete" action that advances the enrollment so the learner
- * can proceed to the certificate.
+ * count, progress and grading owner). Self-paced/hybrid learners get the
+ * "Mark course complete" action; live (instructor-led) courses are closed
+ * ONLY by the instructor, so learners see that instead of a button.
  */
 export function CompletionCard({ progress, enrollment }: CompletionCardProps) {
   const complete = useCompleteEnrollment()
   const manifest = progress?.completion
+  const isLive = manifest?.delivery_mode === 'live'
 
   if (!manifest) {
     return (
@@ -143,7 +144,7 @@ export function CompletionCard({ progress, enrollment }: CompletionCardProps) {
           )}
         </div>
 
-        {manifest.is_complete && !isCompleted && (
+        {manifest.is_complete && !isCompleted && !isLive && (
           <Button
             variant="secondary"
             onClick={() => {
@@ -163,6 +164,13 @@ export function CompletionCard({ progress, enrollment }: CompletionCardProps) {
           >
             {complete.isPending ? 'Marking complete...' : 'Mark course complete'}
           </Button>
+        )}
+
+        {manifest.is_complete && !isCompleted && isLive && (
+          <span className="inline-flex items-center gap-1.5 text-sm text-text-secondary">
+            <Clock className="h-4 w-4 text-academy-amber" />
+            Your instructor will mark this live course complete after grading.
+          </span>
         )}
 
         {isCompleted && (
