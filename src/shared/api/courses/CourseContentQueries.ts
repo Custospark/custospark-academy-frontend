@@ -51,11 +51,16 @@ function useContentMutation<TInput, TOutput>(
       const body = { ...raw }
       delete body.id
 
-      // When a File is present, send multipart/form-data. Booleans must go
-      // as 1/0: String(false) is "false", which Laravel rejects as boolean.
+      // Long uploads must never die to a short timeout: videos get 10
+      // minutes, other files 3 minutes (axios default is far shorter).
+      const hasVideo = Object.values(body).some(
+        (v) => v instanceof File && v.type.startsWith('video/'),
+      )
       const hasFile = Object.values(body).some((v) => v instanceof File)
       let data: FormData | Record<string, unknown>
+      let timeout: number | undefined
       if (hasFile) {
+        timeout = hasVideo ? 600000 : 180000
         data = new FormData()
         for (const [key, value] of Object.entries(body)) {
           if (value !== null && value !== undefined) {
@@ -78,6 +83,7 @@ function useContentMutation<TInput, TOutput>(
         url,
         method,
         data,
+        ...(timeout !== undefined ? { timeout } : {}),
       })
       return response.data
     },
@@ -242,6 +248,8 @@ export function useImportQuestions(courseId: string) {
       const { data } = await axiosInstance.post<{ data: QuestionImportResult }>(
         ENDPOINTS.ADMIN.CONTENT.QUESTIONS_IMPORT(courseId, kind, parentId),
         body,
+        // Spreadsheet parsing runs server-side - give it room.
+        { timeout: 180000 },
       )
       return data.data
     },
@@ -293,6 +301,8 @@ export function useImportResults(courseId: string) {
       const { data } = await axiosInstance.post<{ data: ResultsImportResult }>(
         ENDPOINTS.ADMIN.CONTENT.RESULTS_IMPORT(courseId, kind, parentId),
         body,
+        // Spreadsheet parsing runs server-side - give it room.
+        { timeout: 180000 },
       )
       return data.data
     },
@@ -326,4 +336,57 @@ export function useResultsTemplate(courseId: string) {
     link.remove()
     setTimeout(() => URL.revokeObjectURL(url), 5000)
   }
+}
+export interface InstructorSubmission {
+  id: number
+  user_id: number
+  learner_name: string
+  learner_email: string
+  assessment_type: string
+  assessment_id: number
+  assessment_title: string
+  content: string | null
+  file_path: string | null
+  status: string
+  score: number | null
+  grade: string | null
+  max_score: number | null
+  feedback: string | null
+  submitted_at: string | null
+  graded_at: string | null
+}
+
+/** Instructor grading inbox for a course, filterable by status/type. */
+export function useSubmissions(courseId: string, status?: string, type?: string) {
+  return useQuery({
+    queryKey: [...courseContentKeys.full(courseId), 'submissions', status ?? '', type ?? ''],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{ data: InstructorSubmission[] }>(
+        ENDPOINTS.ADMIN.CONTENT.SUBMISSIONS(courseId),
+        { params: { status: status || undefined, type: type || undefined } },
+      )
+      return data.data
+    },
+    enabled: courseId !== '',
+  })
+}
+
+export function useGradeSubmission(courseId: string) {
+  const queryClient = useQueryClient()
+  return useMutation<unknown, Error, { submissionId: number; score?: number; grade?: string; feedback?: string }>({
+    mutationFn: async ({ submissionId, score, grade, feedback }) => {
+      const { data } = await axiosInstance.put(
+        ENDPOINTS.ADMIN.CONTENT.GRADE_SUBMISSION(courseId, submissionId),
+        { score: score ?? null, grade: grade || null, feedback: feedback || null },
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...courseContentKeys.full(courseId), 'submissions'] })
+      imperativeToast.show('success', 'Grade saved.')
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not save the grade.'))
+    },
+  })
 }

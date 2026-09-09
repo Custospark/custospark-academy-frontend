@@ -127,6 +127,9 @@ export const ENDPOINTS = {
       RESULTS_TEMPLATE: (courseId: string) => `/admin/courses/${courseId}/results/template`,
       RESULTS_IMPORT: (courseId: string, kind: string, parentId: number) =>
         `/admin/courses/${courseId}/${kind}/${parentId}/results/import`,
+      SUBMISSIONS: (courseId: string) => `/admin/courses/${courseId}/submissions`,
+      GRADE_SUBMISSION: (courseId: string, submissionId: number) =>
+        `/admin/courses/${courseId}/submissions/${submissionId}/grade`,
       ASSIGNMENTS: {
         STORE: (courseId: string) => `/admin/courses/${courseId}/assignments`,
         UPDATE: (courseId: string, id: number) => `/admin/courses/${courseId}/assignments/${id}`,

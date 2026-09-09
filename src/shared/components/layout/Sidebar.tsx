@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { ChevronsLeft, ChevronsRight, X } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, LifeBuoy, Mail, Phone, X } from 'lucide-react'
 import { sidebarNavGroups } from './sidebarNavGroups'
 import { ROUTES } from '../../../app/routes/constants/shared.paths'
 import { useAppSelector } from '../../../app/store/hooks/useApp'
@@ -113,18 +113,38 @@ export function Sidebar({ isOpen, onClose, collapsed = false, onToggleCollapse }
       <div className="border-t border-border-subtle p-3">
         {collapsed ? (
           <div
-            className="mx-auto flex h-9 w-9 items-center justify-center"
-            title={user?.name}
+            className="mx-auto flex h-9 w-9 items-center justify-center text-text-muted"
+            title="Quick Support - academy@custospark.com"
           >
-            <LogoImage size="sm" />
+            <LifeBuoy className="h-5 w-5" />
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 rounded-xl border border-border-subtle bg-surface-card p-3">
-            <LogoImage size="sm" className="shrink-0 rounded-lg" />
-            <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-white">{user?.name ?? 'Learner'}</div>
-              <div className="truncate text-xs capitalize text-text-muted">{role}</div>
+          <div className="rounded-xl border border-border-subtle bg-surface-card p-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white">
+              <LifeBuoy className="h-4 w-4 text-blue-300" />
+              Quick Support
             </div>
+            <a
+              href="mailto:academy@custospark.com"
+              className="mt-2 flex items-center gap-2 truncate text-xs text-text-secondary transition-colors hover:text-white"
+            >
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              academy@custospark.com
+            </a>
+            <a
+              href="tel:+256756697871"
+              className="mt-1.5 flex items-center gap-2 text-xs text-text-secondary transition-colors hover:text-white"
+            >
+              <Phone className="h-3.5 w-3.5 shrink-0" />
+              +256 756 697 871
+            </a>
+            <a
+              href="tel:+256764428003"
+              className="mt-1.5 flex items-center gap-2 text-xs text-text-secondary transition-colors hover:text-white"
+            >
+              <Phone className="h-3.5 w-3.5 shrink-0" />
+              +256 764 428 003
+            </a>
           </div>
         )}
       </div>

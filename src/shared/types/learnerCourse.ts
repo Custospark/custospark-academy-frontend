@@ -9,6 +9,7 @@ export interface LearnerLesson {
   video_url: string | null
   video_path: string | null
   book_path: string | null
+  progress_status: 'not_started' | 'in_progress' | 'completed'
   duration_minutes: number | null
   sort_order: number
   is_free_preview: boolean
@@ -27,6 +28,7 @@ export interface LearnerQuiz {
   title: string
   description: string | null
   passing_score: number
+  max_attempts: number
   time_limit_minutes: number | null
   opens_at: string | null
   closes_at: string | null
@@ -44,6 +46,7 @@ export interface LearnerExercise {
   closes_at: string | null
   max_score: number
   passing_score: number
+  max_attempts: number
   questions: LearnerQuestion[]
   my_status: LearnerAttemptStatus | LearnerSubmissionStatus | null
 }
@@ -80,12 +83,14 @@ export interface LearnerAttemptStatus {
   max_score: number
   is_passed: boolean
   submitted_at: string | null
+  attempts_used: number
 }
 
 export interface LearnerSubmissionStatus {
   submitted: boolean
   status: string
   score: number | null
+  grade: string | null
   feedback: string | null
   submitted_at: string | null
   graded_at: string | null

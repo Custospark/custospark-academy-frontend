@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Download,
   FileQuestion,
+  Inbox,
   Mail,
   NotebookPen,
   Target,
@@ -31,6 +32,7 @@ import { AssessmentsTab } from './tabs/AssessmentsTab'
 import { AssignmentsTab } from './tabs/AssignmentsTab'
 import { LearnersTab } from './tabs/LearnersTab'
 import { AttendanceTab } from './tabs/AttendanceTab'
+import { SubmissionsTab } from './tabs/SubmissionsTab'
 
 const TABS = [
   { id: 'outcomes', label: 'Learning Outcomes', icon: Target },
@@ -40,6 +42,7 @@ const TABS = [
   { id: 'assignments', label: 'Assignments', icon: ClipboardList },
   { id: 'learners', label: 'Learners', icon: Users },
   { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
+  { id: 'submissions', label: 'Submissions', icon: Inbox },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -127,6 +130,7 @@ export default function CourseBuilderPage() {
           {activeTab === 'assignments' && <AssignmentsTab course={course} />}
           {activeTab === 'learners' && <LearnersTab course={course} />}
           {activeTab === 'attendance' && <AttendanceTab course={course} />}
+          {activeTab === 'submissions' && <SubmissionsTab course={course} />}
 
           {announceOpen && (
             <AnnounceDialog courseSlug={course.slug} onClose={() => setAnnounceOpen(false)} />

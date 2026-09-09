@@ -90,6 +90,8 @@ export function useCompleteEnrollment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
       queryClient.invalidateQueries({ queryKey: courseKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['learner', 'content'] })
+      queryClient.invalidateQueries({ queryKey: ['learner', 'progress'] })
     },
   })
 }
@@ -103,6 +105,8 @@ export function useMarkLesson(courseId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: learnerKeys.progress(courseId) })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.content(courseId) })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
     },
   })
 }
@@ -118,6 +122,8 @@ export interface SubmitResult {
 }
 
 export function useSubmitWork(courseId: string) {
+  const queryClient = useQueryClient()
+
   return useMutation<SubmitResult, Error, { type: string; typeId: number; content?: string; file?: File }>({
     mutationFn: async ({ type, typeId, content, file }) => {
       const body = new FormData()
@@ -126,8 +132,15 @@ export function useSubmitWork(courseId: string) {
       const { data } = await axiosInstance.post<{ data: SubmitResult }>(
         ENDPOINTS.LEARNER.SUBMIT(courseId, type, typeId),
         body,
+        // Learner answer scripts can be 10MB - never cut the upload short.
+        { timeout: 180000 },
       )
       return data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: learnerKeys.content(courseId) })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.progress(courseId) })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
     },
   })
 }
@@ -140,6 +153,8 @@ export interface AttemptResult {
 }
 
 export function useSubmitAttempt(courseId: string) {
+  const queryClient = useQueryClient()
+
   return useMutation<AttemptResult, Error, { type: string; typeId: number; answers: Record<number, string> }>({
     mutationFn: async ({ type, typeId, answers }) => {
       const { data } = await axiosInstance.post<{ data: AttemptResult }>(
@@ -147,6 +162,11 @@ export function useSubmitAttempt(courseId: string) {
         { answers },
       )
       return data.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: learnerKeys.content(courseId) })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.progress(courseId) })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
     },
   })
 }
@@ -172,6 +192,8 @@ export function useApply() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
       queryClient.invalidateQueries({ queryKey: courseKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['learner', 'content'] })
+      queryClient.invalidateQueries({ queryKey: ['learner', 'progress'] })
     },
   })
 }
@@ -214,6 +236,9 @@ export function usePayFee() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: learnerKeys.myCourses })
       queryClient.invalidateQueries({ queryKey: courseKeys.all })
+      queryClient.invalidateQueries({ queryKey: ['learner', 'content'] })
+      queryClient.invalidateQueries({ queryKey: ['learner', 'progress'] })
+      queryClient.invalidateQueries({ queryKey: learnerKeys.payments })
     },
   })
 }

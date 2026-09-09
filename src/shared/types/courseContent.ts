@@ -62,6 +62,7 @@ export interface QuizItem {
   title: string
   description: string | null
   passing_score: number
+  max_attempts: number
   time_limit_minutes: number | null
   opens_at: string | null
   closes_at: string | null
@@ -79,6 +80,7 @@ export interface ExerciseItem {
   type: 'quiz' | 'practical'
   max_score: number
   passing_score: number
+  max_attempts: number
   time_limit_minutes: number | null
   opens_at: string | null
   closes_at: string | null

@@ -38,7 +38,7 @@ export function PerformanceSection({ course }: { course: LearnerCourse }) {
       opens: e.opens_at,
       closes: e.closes_at,
       status: !s ? 'Not submitted' : 'is_passed' in s ? (s.is_passed ? 'Passed' : 'Attempted') : s.status === 'graded' ? 'Graded' : 'Submitted for grading',
-      score: !s ? '-' : 'is_passed' in s ? `${s.score}/${s.max_score}` : (s.score !== null ? `${s.score}` : '-'),
+      score: !s ? '-' : 'is_passed' in s ? `${s.score}/${s.max_score}` : (s.grade ?? (s.score !== null ? `${s.score}` : '-')),
       feedback: !s || 'is_passed' in s ? null : s.feedback,
     })
   }
@@ -50,7 +50,7 @@ export function PerformanceSection({ course }: { course: LearnerCourse }) {
       opens: x.opens_at,
       closes: x.closes_at,
       status: !s ? 'Not submitted' : s.status === 'graded' ? 'Graded' : 'Submitted for grading',
-      score: s?.score !== null && s?.score !== undefined ? `${s.score}` : '-',
+      score: !s ? '-' : (s.grade ?? (s.score !== null ? `${s.score}` : '-')),
       feedback: s?.feedback ?? null,
     })
   }
@@ -62,7 +62,7 @@ export function PerformanceSection({ course }: { course: LearnerCourse }) {
       opens: a.opens_at,
       closes: a.closes_at,
       status: !s ? 'Not submitted' : s.status === 'graded' ? 'Graded' : 'Submitted for grading',
-      score: s?.score !== null && s?.score !== undefined ? `${s.score}` : '-',
+      score: !s ? '-' : (s.grade ?? (s.score !== null ? `${s.score}` : '-')),
       feedback: s?.feedback ?? null,
     })
   }

@@ -66,6 +66,7 @@ export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; 
       })}
 
       <LessonModal
+        key={activeLesson?.id ?? 'none'}
         lesson={activeLesson}
         courseId={courseId}
         onClose={() => setActiveLesson(null)}
@@ -86,7 +87,12 @@ function LessonModal({
   const startLesson = useMarkLesson(courseId)
   const completeLesson = useMarkLesson(courseId)
   const { showToast } = useToast()
-  const [started, setStarted] = useState(false)
+  // Seed from the server's progress so reopening a finished lesson shows
+  // its real state instead of fresh buttons.
+  const [started, setStarted] = useState(
+    lesson?.progress_status === 'in_progress' || lesson?.progress_status === 'completed',
+  )
+  const [completed, setCompleted] = useState(lesson?.progress_status === 'completed')
   const bookUrl = storageUrl(lesson?.book_path)
   const hasMedia =
     !!storageUrl(lesson?.video_path) || !!lesson?.video_url || !!bookUrl || !!lesson?.content
@@ -151,49 +157,61 @@ function LessonModal({
           )}
 
           <div className="flex flex-wrap gap-3 border-t border-border-subtle pt-4">
-            <Button
-              onClick={() =>
-                startLesson.mutate(
-                  { lessonId: lesson.id, status: 'in_progress' },
-                  {
-                    onSuccess: () => {
-                      setStarted(true)
-                      showToast('success', 'Lesson started.')
-                    },
-                    onError: (err) => showToast('error', apiErrorMessage(err, 'Could not start the lesson.')),
-                  },
-                )
-              }
-              loading={startLesson.isPending}
-              disabled={startLesson.isPending || started}
-              variant={started ? 'outline' : 'primary'}
-            >
-              {started ? (
-                <>
+            {completed ? (
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-semantic-success">
+                <CheckCircle2 className="h-4 w-4" />
+                Completed
+              </span>
+            ) : (
+              <>
+                <Button
+                  onClick={() =>
+                    startLesson.mutate(
+                      { lessonId: lesson.id, status: 'in_progress' },
+                      {
+                        onSuccess: () => {
+                          setStarted(true)
+                          showToast('success', 'Lesson started.')
+                        },
+                        onError: (err) => showToast('error', apiErrorMessage(err, 'Could not start the lesson.')),
+                      },
+                    )
+                  }
+                  loading={startLesson.isPending}
+                  disabled={startLesson.isPending || started}
+                  variant={started ? 'outline' : 'primary'}
+                >
+                  {started ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      Started
+                    </>
+                  ) : (
+                    'Start lesson'
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    completeLesson.mutate(
+                      { lessonId: lesson.id, status: 'completed' },
+                      {
+                        onSuccess: () => {
+                          setCompleted(true)
+                          onClose()
+                        },
+                        onError: (err) => showToast('error', apiErrorMessage(err, 'Could not complete the lesson.')),
+                      },
+                    )
+                  }
+                  loading={completeLesson.isPending}
+                  disabled={completeLesson.isPending}
+                >
                   <CheckCircle2 className="h-4 w-4" />
-                  Started
-                </>
-              ) : (
-                'Start lesson'
-              )}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                completeLesson.mutate(
-                  { lessonId: lesson.id, status: 'completed' },
-                  {
-                    onSuccess: onClose,
-                    onError: (err) => showToast('error', apiErrorMessage(err, 'Could not complete the lesson.')),
-                  },
-                )
-              }
-              loading={completeLesson.isPending}
-              disabled={completeLesson.isPending}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              Mark as complete
-            </Button>
+                  Mark as complete
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

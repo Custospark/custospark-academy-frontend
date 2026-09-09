@@ -51,7 +51,7 @@ export function AssessmentBadges({ item }: { item: WindowedItem }) {
           )}
         >
           {status.status === 'graded'
-            ? `Graded${status.score !== null ? `: ${status.score}` : ''}`
+            ? `Graded${status.grade ? `: ${status.grade}` : status.score !== null ? `: ${status.score}` : ''}`
             : 'Submitted for grading'}
         </span>
       )}

@@ -47,6 +47,7 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
 
   const [title, setTitle] = useState('')
   const [passing, setPassing] = useState('50')
+  const [maxAttempts, setMaxAttempts] = useState('2')
   const [opensAt, setOpensAt] = useState('')
   const [closesAt, setClosesAt] = useState('')
   const [questions, setQuestions] = useState<DraftQuestion[]>([{ ...EMPTY_QUESTION }])
@@ -71,6 +72,7 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
     setKind(null)
     setTitle('')
     setPassing('50')
+    setMaxAttempts('2')
     setOpensAt('')
     setClosesAt('')
     setQuestions([{ ...EMPTY_QUESTION }])
@@ -99,6 +101,7 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
     creators[kind]({
       title: title.trim(),
       passing_score: Number(passing) || 50,
+      max_attempts: Math.min(10, Math.max(1, Number(maxAttempts) || 2)),
       max_score: 100,
       questions: cleanQuestions,
       opens_at: fromInputDateTime(opensAt),
@@ -251,7 +254,7 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
               </p>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <Input
               label="Passing score (%)"
               type="number"
@@ -259,6 +262,14 @@ export function AssessmentsTab({ course }: { course: CourseFull }) {
               max={100}
               value={passing}
               onChange={(e) => setPassing(e.target.value)}
+            />
+            <Input
+              label="Max attempts"
+              type="number"
+              min={1}
+              max={10}
+              value={maxAttempts}
+              onChange={(e) => setMaxAttempts(e.target.value)}
             />
             <Input
               label="Opens at (optional)"
@@ -513,7 +524,7 @@ function ResultsImportDialog({
     <Modal open onClose={onClose} title={`Upload ${RESULTS_KIND_LABEL[kind].toLowerCase()} results`} size="sm">
       <div className="space-y-4">
         <p className="text-sm text-text-secondary">
-          Download the template, fill one row per learner (email, score, feedback), then upload
+          Download the template, fill one row per learner (email, score, grade like A/85%, feedback), then upload
           it here. Each row becomes a graded result the learner can see.
         </p>
 
