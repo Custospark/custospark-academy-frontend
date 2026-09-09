@@ -1,6 +1,7 @@
 import { ChartColumn } from 'lucide-react'
 import type { LearnerCourse } from '../../shared/types/learnerCourse'
 import { windowLabel } from '../../shared/utils/assessmentWindows'
+import { useMyAttendance } from '../../shared/api/misc/MiscQueries'
 
 /**
  * Learner performance across every assessment in the course: windows,
@@ -106,6 +107,57 @@ export function PerformanceSection({ course }: { course: LearnerCourse }) {
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+/** Learner-facing attendance: auto-calculated rate plus every marked session. */
+export function MyAttendanceBlock({ courseSlug }: { courseSlug: string }) {
+  const { data, isPending } = useMyAttendance(courseSlug)
+
+  if (isPending || !data) return null
+
+  const rate = data.rate
+  const statusColor = (status: string) =>
+    status === 'present'
+      ? 'bg-semantic-success/15 text-semantic-success'
+      : status === 'late'
+        ? 'bg-academy-amber/15 text-academy-amber'
+        : status === 'excused'
+          ? 'bg-blue-500/15 text-blue-300'
+          : 'bg-semantic-error/15 text-semantic-error'
+
+  return (
+    <div className="mb-6 max-w-4xl rounded-2xl border border-border-subtle bg-surface-card p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="font-display text-base font-bold text-white">My attendance</h3>
+        <span className="rounded-full bg-blue-500/15 px-3 py-1 text-sm font-bold text-blue-300">
+          {rate.rate}%
+        </span>
+      </div>
+      <div className="mb-4 flex items-center gap-2">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-input">
+          <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${rate.rate}%` }} />
+        </div>
+        <span className="text-xs text-text-muted">
+          {rate.attended_days}/{rate.total_days} days
+        </span>
+      </div>
+      {data.records.length === 0 ? (
+        <p className="text-sm text-text-muted">No sessions marked yet.</p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {data.records.map((record) => (
+            <li
+              key={record.date}
+              title={record.date}
+              className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ${statusColor(record.status)}`}
+            >
+              {new Date(`${record.date}T00:00:00`).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' })} · {record.status}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

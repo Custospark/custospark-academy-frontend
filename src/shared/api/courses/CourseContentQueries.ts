@@ -209,6 +209,13 @@ export function useCreateAssignment(courseId: string) {
   )
 }
 
+export function useUpdateAssignment(courseId: string) {
+  return useContentMutation<Partial<AssignmentItem> & { id: number }, AssignmentItem>(
+    (c, id) => ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.UPDATE(c, id!),
+    courseId,
+  )
+}
+
 export function useDeleteAssignment(courseId: string) {
   return useDeleteContent(courseId, ENDPOINTS.ADMIN.CONTENT.ASSIGNMENTS.DESTROY)
 }

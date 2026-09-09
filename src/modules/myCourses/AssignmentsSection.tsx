@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { CheckCircle2, ClipboardList, Upload } from 'lucide-react'
+import { CheckCircle2, ClipboardList, Download, Upload } from 'lucide-react'
 import type { LearnerAssignment, LearnerCourse } from '../../shared/types/learnerCourse'
 import { Button } from '../../shared/components/buttons/Button'
 import { Modal } from '../../shared/components/modals/Modal'
 import { useSubmitWork, type SubmitResult } from '../../shared/api/learner/LearnerCourseQueries'
 import { windowBlockedReason } from '../../shared/utils/assessmentWindows'
+import { storageUrl } from '../../shared/utils/storageUrl'
 import { AssessmentBadges } from './assessmentMeta'
 
 export function AssignmentsSection({ course, courseId }: { course: LearnerCourse; courseId: string }) {
@@ -113,6 +114,17 @@ function SubmissionModal({
           <p className="text-sm leading-relaxed text-text-secondary">
             {assignment.instructions || 'Submit your work below.'}
           </p>
+          {storageUrl(assignment.file_path) && (
+            <a
+              href={storageUrl(assignment.file_path) ?? '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-xl border border-blue-500/40 bg-blue-500/10 px-4 py-3 transition-colors hover:border-blue-500"
+            >
+              <Download className="h-5 w-5 shrink-0 text-blue-300" />
+              <span className="text-sm font-medium text-white">Download assignment brief</span>
+            </a>
+          )}
 
           {assignment.submission_type === 'text' && (
             <div>

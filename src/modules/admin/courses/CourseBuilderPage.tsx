@@ -11,6 +11,7 @@ import {
   NotebookPen,
   Target,
   Users,
+  CalendarCheck,
 } from 'lucide-react'
 import { useCourseContent } from '../../../shared/api/courses/CourseContentQueries'
 import { useAnnounce, useExportLearners } from '../../../shared/api/misc/MiscQueries'
@@ -29,6 +30,7 @@ import { ResourcesTab } from './tabs/ResourcesTab'
 import { AssessmentsTab } from './tabs/AssessmentsTab'
 import { AssignmentsTab } from './tabs/AssignmentsTab'
 import { LearnersTab } from './tabs/LearnersTab'
+import { AttendanceTab } from './tabs/AttendanceTab'
 
 const TABS = [
   { id: 'outcomes', label: 'Learning Outcomes', icon: Target },
@@ -37,6 +39,7 @@ const TABS = [
   { id: 'assessments', label: 'Assessments', icon: FileQuestion },
   { id: 'assignments', label: 'Assignments', icon: ClipboardList },
   { id: 'learners', label: 'Learners', icon: Users },
+  { id: 'attendance', label: 'Attendance', icon: CalendarCheck },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
@@ -123,6 +126,7 @@ export default function CourseBuilderPage() {
           {activeTab === 'assessments' && <AssessmentsTab course={course} />}
           {activeTab === 'assignments' && <AssignmentsTab course={course} />}
           {activeTab === 'learners' && <LearnersTab course={course} />}
+          {activeTab === 'attendance' && <AttendanceTab course={course} />}
 
           {announceOpen && (
             <AnnounceDialog courseSlug={course.slug} onClose={() => setAnnounceOpen(false)} />

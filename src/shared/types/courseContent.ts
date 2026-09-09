@@ -105,6 +105,7 @@ export interface AssignmentItem {
   lesson_id: number | null
   title: string
   instructions: string | null
+  file_path: string | null
   submission_type: 'text' | 'file' | 'link'
   due_after_days: number | null
   opens_at: string | null

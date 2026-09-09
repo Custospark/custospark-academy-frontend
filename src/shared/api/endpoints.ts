@@ -48,6 +48,7 @@ export const ENDPOINTS = {
     MARK_LESSON: (courseId: string, lessonId: number) => `/courses/${courseId}/lessons/${lessonId}/progress`,
     SUBMIT: (courseId: string, type: string, typeId: number) => `/courses/${courseId}/submit/${type}/${typeId}`,
     ATTEMPT: (courseId: string, type: string, typeId: number) => `/courses/${courseId}/attempt/${type}/${typeId}`,
+    ATTENDANCE_MINE: (courseId: string) => `/courses/${courseId}/attendance/mine`,
   },
   CERTIFICATES: {
     MINE: '/certificates/mine',
@@ -70,6 +71,8 @@ export const ENDPOINTS = {
     ANNOUNCE: (courseId: string) => `/admin/courses/${courseId}/announce`,
     EXPORT_LEARNERS: (courseId: string) => `/admin/courses/${courseId}/learners/export`,
     COMPLETE_LEARNERS: (courseId: string) => `/admin/courses/${courseId}/complete-learners`,
+    ATTENDANCE: (courseId: string) => `/admin/courses/${courseId}/attendance`,
+    ATTENDANCE_MARK_ALL: (courseId: string) => `/admin/courses/${courseId}/attendance/mark-all`,
     INSTRUCTORS: {
       INDEX: '/admin/instructors',
       STORE: '/admin/instructors',

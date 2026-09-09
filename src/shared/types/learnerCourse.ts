@@ -64,6 +64,7 @@ export interface LearnerAssignment {
   id: number
   title: string
   instructions: string | null
+  file_path: string | null
   submission_type: 'text' | 'file' | 'link'
   max_score: number
   opens_at: string | null

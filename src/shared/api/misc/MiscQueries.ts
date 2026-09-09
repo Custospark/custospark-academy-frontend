@@ -309,3 +309,101 @@ export function useCompleteLearners(courseSlug: string) {
     },
   })
 }
+
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
+
+export interface AttendanceRosterRow {
+  user_id: number
+  name: string
+  email: string
+  status: AttendanceStatus | null
+  rate: number
+}
+
+export interface AttendanceRate {
+  present: number
+  late: number
+  absent: number
+  excused: number
+  total_days: number
+  attended_days: number
+  rate: number
+}
+
+export interface MyAttendance {
+  records: Array<{ date: string; status: AttendanceStatus }>
+  rate: AttendanceRate
+}
+
+/** Class register for a date (admitted learners only, backend-enforced). */
+export function useAttendanceRoster(courseSlug: string, date: string) {
+  return useQuery({
+    queryKey: [...miscKeys.adminEnrollments, 'attendance', courseSlug, date],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{ data: AttendanceRosterRow[] }>(
+        ENDPOINTS.ADMIN.ATTENDANCE(courseSlug),
+        { params: { date } },
+      )
+      return data.data
+    },
+    enabled: courseSlug !== '' && date !== '',
+  })
+}
+
+export function useMarkAttendance(courseSlug: string) {
+  const queryClient = useQueryClient()
+  return useMutation<{ marked: number; errors: string[] }, Error, { date: string; records: Array<{ user_id: number; status: AttendanceStatus }> }>({
+    mutationFn: async (payload) => {
+      const { data } = await axiosInstance.post<{ data: { marked: number; errors: string[] } }>(
+        ENDPOINTS.ADMIN.ATTENDANCE(courseSlug),
+        payload,
+      )
+      return data.data
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: [...miscKeys.adminEnrollments, 'attendance'] })
+      if (result.errors.length > 0) {
+        imperativeToast.show('warning', `Marked ${result.marked}. ${result.errors[0]}`, 8000)
+      } else {
+        imperativeToast.show('success', `Marked ${result.marked} learner${result.marked === 1 ? '' : 's'}.`)
+      }
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not save attendance.'))
+    },
+  })
+}
+
+export function useMarkAllAttendance(courseSlug: string) {
+  const queryClient = useQueryClient()
+  return useMutation<{ marked: number }, Error, { date: string; status: AttendanceStatus }>({
+    mutationFn: async (payload) => {
+      const { data } = await axiosInstance.post<{ data: { marked: number } }>(
+        ENDPOINTS.ADMIN.ATTENDANCE_MARK_ALL(courseSlug),
+        payload,
+      )
+      return data.data
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: [...miscKeys.adminEnrollments, 'attendance'] })
+      imperativeToast.show('success', `Marked ${result.marked} learner${result.marked === 1 ? '' : 's'}.`)
+    },
+    onError: (err) => {
+      imperativeToast.show('error', apiErrorMessage(err, 'Could not save attendance.'))
+    },
+  })
+}
+
+/** Learner's own attendance records + auto-calculated rate. */
+export function useMyAttendance(courseSlug: string) {
+  return useQuery({
+    queryKey: ['attendance', 'mine', courseSlug],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{ data: MyAttendance }>(
+        ENDPOINTS.LEARNER.ATTENDANCE_MINE(courseSlug),
+      )
+      return data.data
+    },
+    enabled: courseSlug !== '',
+  })
+}

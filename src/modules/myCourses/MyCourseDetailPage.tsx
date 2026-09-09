@@ -23,7 +23,7 @@ import { CurriculumPlayer } from './CurriculumPlayer'
 import { ResourcesSection } from './ResourcesSection'
 import { AssessmentsSection } from './AssessmentsSection'
 import { AssignmentsSection } from './AssignmentsSection'
-import { PerformanceSection } from './PerformanceSection'
+import { PerformanceSection, MyAttendanceBlock } from './PerformanceSection'
 import { CompletionCard } from './CompletionCard'
 
 const TABS = [
@@ -158,7 +158,12 @@ export default function MyCourseDetailPage() {
           {activeTab === 'resources' && <ResourcesSection course={course} />}
           {activeTab === 'assessments' && <AssessmentsSection course={course} courseId={courseSlug} />}
           {activeTab === 'assignments' && <AssignmentsSection course={course} courseId={courseSlug} />}
-          {activeTab === 'performance' && <PerformanceSection course={course} />}
+          {activeTab === 'performance' && (
+            <>
+              <MyAttendanceBlock courseSlug={courseSlug} />
+              <PerformanceSection course={course} />
+            </>
+          )}
         </>
       )}
 
