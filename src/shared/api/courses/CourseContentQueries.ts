@@ -51,14 +51,21 @@ function useContentMutation<TInput, TOutput>(
       const body = { ...raw }
       delete body.id
 
-      // When a File is present, send multipart/form-data.
+      // When a File is present, send multipart/form-data. Booleans must go
+      // as 1/0: String(false) is "false", which Laravel rejects as boolean.
       const hasFile = Object.values(body).some((v) => v instanceof File)
       let data: FormData | Record<string, unknown>
       if (hasFile) {
         data = new FormData()
         for (const [key, value] of Object.entries(body)) {
           if (value !== null && value !== undefined) {
-            data.append(key, value instanceof File ? value : String(value))
+            if (value instanceof File) {
+              data.append(key, value)
+            } else if (typeof value === 'boolean') {
+              data.append(key, value ? '1' : '0')
+            } else {
+              data.append(key, String(value))
+            }
           }
         }
       } else {

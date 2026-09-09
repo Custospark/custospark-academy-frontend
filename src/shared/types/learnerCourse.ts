@@ -7,6 +7,7 @@ export interface LearnerLesson {
   content_type: string
   content: string | null
   video_url: string | null
+  video_path: string | null
   duration_minutes: number | null
   sort_order: number
   is_free_preview: boolean

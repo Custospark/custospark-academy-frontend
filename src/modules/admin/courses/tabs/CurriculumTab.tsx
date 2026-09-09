@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ChevronDown, FolderPlus, NotebookPen, Pencil, Plus, Trash2, Video, FileText } from 'lucide-react'
 import type { CourseFull, CourseSection, LessonItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
 import { Modal } from '../../../../shared/components/modals/Modal'
+import { storageUrl } from '../../../../shared/utils/storageUrl'
 import {
   useCreateSection,
   useDeleteSection,
@@ -260,6 +261,8 @@ function AddLessonModal({
     content_type: 'text' as LessonItem['content_type'],
     content: '',
     video_url: '',
+    video_source: 'upload' as 'upload' | 'link',
+    video_file: null as File | null,
     duration_minutes: '',
     is_free_preview: false,
   })
@@ -274,6 +277,8 @@ function AddLessonModal({
         content_type: lesson.content_type,
         content: lesson.content ?? '',
         video_url: lesson.video_url ?? '',
+        video_source: lesson.video_path ? 'upload' : 'link',
+        video_file: null,
         duration_minutes: lesson.duration_minutes ? String(lesson.duration_minutes) : '',
         is_free_preview: lesson.is_free_preview,
       })
@@ -283,6 +288,8 @@ function AddLessonModal({
         content_type: 'text',
         content: '',
         video_url: '',
+        video_source: 'upload',
+        video_file: null,
         duration_minutes: '',
         is_free_preview: false,
       })
@@ -292,16 +299,43 @@ function AddLessonModal({
 
   const busy = createLesson.isPending || updateLesson.isPending
 
+  // Instructor preview: newly-picked file, stored upload, or pasted link.
+  const newFileUrl = useMemo(
+    () => (form.video_file ? URL.createObjectURL(form.video_file) : null),
+    [form.video_file],
+  )
+  useEffect(() => {
+    return () => {
+      if (newFileUrl) URL.revokeObjectURL(newFileUrl)
+    }
+  }, [newFileUrl])
+  const storedVideoUrl = editing?.video_path ? storageUrl(editing.video_path) : null
+  const previewUploadUrl = newFileUrl ?? storedVideoUrl
+  const previewLinkUrl =
+    form.content_type === 'video' && form.video_source === 'link' && form.video_url.trim() !== ''
+      ? form.video_url.trim()
+      : null
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setLessonError(null)
     if (!form.title.trim() || !modal || busy) return
+    if (form.content_type === 'video' && form.video_source === 'upload' && !form.video_file && !editing?.video_path) {
+      setLessonError('Choose a video file to upload or switch to link.')
+      return
+    }
     const payload = {
       section_id: modal.sectionId,
       title: form.title.trim(),
       content_type: form.content_type,
       content: form.content || null,
-      video_url: form.video_url || null,
+      video_url:
+        form.content_type === 'video' && form.video_source === 'link'
+          ? form.video_url || null
+          : editing && !form.video_file
+            ? (editing.video_url ?? null)
+            : null,
+      video: form.content_type === 'video' && form.video_source === 'upload' ? form.video_file ?? undefined : undefined,
       duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null,
       is_free_preview: form.is_free_preview,
     }
@@ -356,6 +390,7 @@ function AddLessonModal({
                       // Stale values from another type must never leak into the payload.
                       content: type === 'text' || type === 'article' ? f.content : '',
                       video_url: type === 'video' || type === 'embed' ? f.video_url : '',
+                      video_file: type === 'video' ? f.video_file : null,
                     }))
                   }
                 className={
@@ -371,12 +406,79 @@ function AddLessonModal({
         </div>
 
         {form.content_type === 'video' && (
-          <Input
-            label="Video URL"
-            value={form.video_url}
-            onChange={(e) => setForm((f) => ({ ...f, video_url: e.target.value }))}
-            placeholder="https://youtube.com/watch?v=..."
-          />
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-text-secondary">Video source</label>
+              <div className="flex gap-2">
+                {(['upload', 'link'] as const).map((source) => (
+                  <button
+                    key={source}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, video_source: source }))}
+                    className={
+                      form.video_source === source
+                        ? 'rounded-lg bg-blue-500/15 px-3 py-1.5 text-sm font-semibold text-blue-300'
+                        : 'rounded-lg border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary hover:border-border-strong'
+                    }
+                  >
+                    {source === 'upload' ? 'Upload file' : 'Paste link'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {form.video_source === 'upload' ? (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-text-secondary">
+                  Video file (MP4/WebM, max 100MB)
+                </label>
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,video/ogg"
+                  onChange={(e) => setForm((f) => ({ ...f, video_file: e.target.files?.[0] ?? null }))}
+                  className="w-full rounded-lg border border-border-default bg-surface-input px-3 py-2.5 text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-blue-500/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-300"
+                />
+                <p className="mt-1.5 text-xs text-text-muted">
+                  {form.video_file
+                    ? `Selected: ${form.video_file.name}`
+                    : editing?.video_path
+                      ? 'A video is already attached - choosing one replaces it.'
+                      : 'Learners get full playback controls (play, seek, fullscreen).'}
+                </p>
+              </div>
+            ) : (
+              <Input
+                label="Video URL"
+                value={form.video_url}
+                onChange={(e) => setForm((f) => ({ ...f, video_url: e.target.value }))}
+                placeholder="https://youtube.com/watch?v=..."
+              />
+            )}
+            {(previewUploadUrl || previewLinkUrl) && (
+              <div>
+                <span className="mb-1.5 block text-sm font-medium text-text-secondary">Preview</span>
+                <div className="overflow-hidden rounded-xl border border-border-subtle bg-black">
+                  {previewUploadUrl ? (
+                    <video
+                      src={previewUploadUrl}
+                      className="aspect-video w-full"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    previewLinkUrl && (
+                      <iframe
+                        src={previewLinkUrl}
+                        title="Lesson video preview"
+                        className="aspect-video w-full"
+                        allowFullScreen
+                      />
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {form.content_type === 'embed' && (

@@ -4,6 +4,7 @@ import type { LearnerCourse, LearnerLesson } from '../../shared/types/learnerCou
 import { Button } from '../../shared/components/buttons/Button'
 import { Modal } from '../../shared/components/modals/Modal'
 import { useMarkLesson } from '../../shared/api/learner/LearnerCourseQueries'
+import { storageUrl } from '../../shared/utils/storageUrl'
 import { cn } from '../../shared/utils/cn'
 
 export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; courseId: string }) {
@@ -90,15 +91,28 @@ function LessonModal({
     >
       {lesson && (
         <div className="space-y-4">
-          {lesson.video_url && (
-            <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
-              <iframe
-                src={lesson.video_url}
+          {storageUrl(lesson.video_path) ? (
+            <div className="overflow-hidden rounded-xl border border-border-subtle bg-black">
+              <video
+                src={storageUrl(lesson.video_path) ?? ''}
                 title={lesson.title}
-                className="h-full w-full"
-                allowFullScreen
+                className="aspect-video w-full"
+                controls
+                playsInline
+                preload="metadata"
               />
             </div>
+          ) : (
+            lesson.video_url && (
+              <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
+                <iframe
+                  src={lesson.video_url}
+                  title={lesson.title}
+                  className="h-full w-full"
+                  allowFullScreen
+                />
+              </div>
+            )
           )}
 
           {lesson.content && (
