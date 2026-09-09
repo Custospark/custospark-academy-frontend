@@ -95,7 +95,11 @@ function LessonModal({
   const [completed, setCompleted] = useState(lesson?.progress_status === 'completed')
   const bookUrl = storageUrl(lesson?.book_path)
   const hasMedia =
-    !!storageUrl(lesson?.video_path) || !!lesson?.video_url || !!bookUrl || !!lesson?.content
+    (lesson?.content_type === 'video' &&
+      (!!storageUrl(lesson?.video_path) || !!lesson?.video_url)) ||
+    (lesson?.content_type === 'embed' && !!lesson?.video_url) ||
+    (lesson?.content_type === 'book' && !!bookUrl) ||
+    !!lesson?.content
 
   return (
     <Modal
@@ -113,31 +117,43 @@ function LessonModal({
             </div>
           )}
 
-          {storageUrl(lesson.video_path) ? (
-            <div className="overflow-hidden rounded-xl border border-border-subtle bg-black">
-              <video
-                src={storageUrl(lesson.video_path) ?? ''}
-                title={lesson.title}
-                className="aspect-video w-full"
-                controls
-                playsInline
-                preload="metadata"
-              />
-            </div>
-          ) : (
-            lesson.video_url && (
-              <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
-                <iframe
-                  src={lesson.video_url}
+          {lesson.content_type === 'video' &&
+            (storageUrl(lesson.video_path) ? (
+              <div className="overflow-hidden rounded-xl border border-border-subtle bg-black">
+                <video
+                  src={storageUrl(lesson.video_path) ?? ''}
                   title={lesson.title}
-                  className="h-full w-full"
-                  allowFullScreen
+                  className="aspect-video w-full"
+                  controls
+                  playsInline
+                  preload="metadata"
                 />
               </div>
-            )
+            ) : (
+              lesson.video_url && (
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
+                  <iframe
+                    src={lesson.video_url}
+                    title={lesson.title}
+                    className="h-full w-full"
+                    allowFullScreen
+                  />
+                </div>
+              )
+            ))}
+
+          {lesson.content_type === 'embed' && lesson.video_url && (
+            <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
+              <iframe
+                src={lesson.video_url}
+                title={lesson.title}
+                className="h-full w-full"
+                allowFullScreen
+              />
+            </div>
           )}
 
-          {bookUrl && (
+          {lesson.content_type === 'book' && bookUrl && (
             <a
               href={bookUrl}
               target="_blank"
