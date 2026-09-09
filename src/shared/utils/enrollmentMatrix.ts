@@ -96,9 +96,9 @@ export const ENROLLMENT_MATRIX: Record<EnrollmentStatus, EnrollmentMatrixEntry> 
   certified: {
     badgeLabel: 'Certified',
     badgeClass: BADGE_STYLES.certified,
-    actionLabel: 'View certificate',
-    action: { type: 'certificate' },
-    note: 'Congratulations! You are certified.',
+    actionLabel: 'Start course',
+    action: { type: 'continue' },
+    note: 'Congratulations! You are certified. Revisit any lesson anytime - your certificate lives under Certificates.',
   },
   rejected: {
     badgeLabel: 'Rejected',
