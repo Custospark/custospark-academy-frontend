@@ -5,6 +5,7 @@ import { store } from './app/store/store'
 import { queryClient } from './app/api/axiosConfig'
 import { AuthBootstrap } from './app/components/AuthBootstrap'
 import { ToastProvider } from './app/contexts/ToastContext'
+import { PaymentStatusSync } from './app/components/PaymentStatusSync'
 import { AppRoutes } from './app/routes'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <AuthBootstrap>
           <BrowserRouter>
             <ToastProvider>
+              <PaymentStatusSync />
               <AppRoutes />
             </ToastProvider>
           </BrowserRouter>
