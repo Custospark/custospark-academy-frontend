@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { AxiosProgressEvent } from 'axios'
 import { axiosInstance } from '../../../app/api/axiosConfig'
+import { UPLOAD_TIMEOUT } from '../../../app/api/apiConfig'
 import { imperativeToast } from '../../../app/contexts/imperativeToast'
 import { apiErrorMessage } from '../../utils/apiError'
 import { ENDPOINTS } from '../endpoints'
@@ -37,6 +39,8 @@ export function useCourseContent(courseId: string) {
 }
 
 /** Generic helper to build a CRUD mutation for a content sub-resource. */
+export type UploadProgressHandler = (event: AxiosProgressEvent) => void
+
 function useContentMutation<TInput, TOutput>(
   builder: (courseId: string, id?: number) => string,
   courseId: string,
@@ -44,23 +48,22 @@ function useContentMutation<TInput, TOutput>(
 ) {
   const queryClient = useQueryClient()
 
-  return useMutation<TOutput, Error, TInput>({
+  return useMutation<TOutput, Error, TInput & { onUploadProgress?: UploadProgressHandler }>({
     mutationFn: async (payload) => {
       const raw = payload as Record<string, unknown>
       const id = raw.id as number | undefined
+      const onUploadProgress = raw.onUploadProgress as UploadProgressHandler | undefined
       const body = { ...raw }
       delete body.id
+      delete body.onUploadProgress
 
-      // Long uploads must never die to a short timeout: videos get 10
-      // minutes, other files 3 minutes (axios default is far shorter).
-      const hasVideo = Object.values(body).some(
-        (v) => v instanceof File && v.type.startsWith('video/'),
-      )
+      // Slow connections need room: every file upload (video or document)
+      // gets up to 1 hour (axios default is far shorter).
       const hasFile = Object.values(body).some((v) => v instanceof File)
       let data: FormData | Record<string, unknown>
       let timeout: number | undefined
       if (hasFile) {
-        timeout = hasVideo ? 600000 : 180000
+        timeout = UPLOAD_TIMEOUT
         data = new FormData()
         for (const [key, value] of Object.entries(body)) {
           if (value !== null && value !== undefined) {
@@ -84,6 +87,7 @@ function useContentMutation<TInput, TOutput>(
         method,
         data,
         ...(timeout !== undefined ? { timeout } : {}),
+        ...(onUploadProgress ? { onUploadProgress } : {}),
       })
       return response.data
     },
@@ -241,15 +245,15 @@ export interface QuestionImportResult {
 
 export function useImportQuestions(courseId: string) {
   const queryClient = useQueryClient()
-  return useMutation<QuestionImportResult, Error, { kind: string; parentId: number; file: File }>({
-    mutationFn: async ({ kind, parentId, file }) => {
+  return useMutation<QuestionImportResult, Error, { kind: string; parentId: number; file: File; onUploadProgress?: UploadProgressHandler }>({
+    mutationFn: async ({ kind, parentId, file, onUploadProgress }) => {
       const body = new FormData()
       body.append('file', file)
       const { data } = await axiosInstance.post<{ data: QuestionImportResult }>(
         ENDPOINTS.ADMIN.CONTENT.QUESTIONS_IMPORT(courseId, kind, parentId),
         body,
-        // Spreadsheet parsing runs server-side - give it room.
-        { timeout: 180000 },
+        // Spreadsheet parsing runs server-side - give it up to 1 hour.
+        { timeout: UPLOAD_TIMEOUT, ...(onUploadProgress ? { onUploadProgress } : {}) },
       )
       return data.data
     },
@@ -294,15 +298,15 @@ export interface ResultsImportResult {
 /** Bulk-upload instructor results (exams, exercises, assignments). */
 export function useImportResults(courseId: string) {
   const queryClient = useQueryClient()
-  return useMutation<ResultsImportResult, Error, { kind: string; parentId: number; file: File }>({
-    mutationFn: async ({ kind, parentId, file }) => {
+  return useMutation<ResultsImportResult, Error, { kind: string; parentId: number; file: File; onUploadProgress?: UploadProgressHandler }>({
+    mutationFn: async ({ kind, parentId, file, onUploadProgress }) => {
       const body = new FormData()
       body.append('file', file)
       const { data } = await axiosInstance.post<{ data: ResultsImportResult }>(
         ENDPOINTS.ADMIN.CONTENT.RESULTS_IMPORT(courseId, kind, parentId),
         body,
-        // Spreadsheet parsing runs server-side - give it room.
-        { timeout: 180000 },
+        // Spreadsheet parsing runs server-side - give it up to 1 hour.
+        { timeout: UPLOAD_TIMEOUT, ...(onUploadProgress ? { onUploadProgress } : {}) },
       )
       return data.data
     },

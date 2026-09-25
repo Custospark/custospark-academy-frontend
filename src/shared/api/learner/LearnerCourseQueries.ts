@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { AxiosProgressEvent } from 'axios'
 import { axiosInstance } from '../../../app/api/axiosConfig'
+import { UPLOAD_TIMEOUT } from '../../../app/api/apiConfig'
 import { ENDPOINTS } from '../endpoints'
 import { courseKeys } from '../courses/CourseQueries'
 import type { LearnerCourse } from '../../types/learnerCourse'
@@ -124,16 +126,16 @@ export interface SubmitResult {
 export function useSubmitWork(courseId: string) {
   const queryClient = useQueryClient()
 
-  return useMutation<SubmitResult, Error, { type: string; typeId: number; content?: string; file?: File }>({
-    mutationFn: async ({ type, typeId, content, file }) => {
+  return useMutation<SubmitResult, Error, { type: string; typeId: number; content?: string; file?: File; onUploadProgress?: (event: AxiosProgressEvent) => void }>({
+    mutationFn: async ({ type, typeId, content, file, onUploadProgress }) => {
       const body = new FormData()
       if (content) body.append('content', content)
       if (file) body.append('file', file)
       const { data } = await axiosInstance.post<{ data: SubmitResult }>(
         ENDPOINTS.LEARNER.SUBMIT(courseId, type, typeId),
         body,
-        // Learner answer scripts can be 10MB - never cut the upload short.
-        { timeout: 180000 },
+        // Learner answer scripts can be large on slow connections - allow up to 1 hour.
+        { timeout: UPLOAD_TIMEOUT, ...(onUploadProgress ? { onUploadProgress } : {}) },
       )
       return data.data
     },

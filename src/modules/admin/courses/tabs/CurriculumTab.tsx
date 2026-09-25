@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ChevronDown, FolderPlus, NotebookPen, Pencil, Plus, Trash2, Video, FileText, BookOpen } from 'lucide-react'
+import type { AxiosProgressEvent } from 'axios'
 import type { CourseFull, CourseSection, LessonItem } from '../../../../shared/types/courseContent'
 import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
@@ -268,6 +269,7 @@ function AddLessonModal({
     is_free_preview: false,
   })
   const [lessonError, setLessonError] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
 
   // Prefill when editing; reset when opening a blank form.
   useEffect(() => {
@@ -298,6 +300,7 @@ function AddLessonModal({
       })
     }
     setLessonError(null)
+    setUploadProgress(null)
   }, [modal])
 
   const busy = createLesson.isPending || updateLesson.isPending
@@ -331,6 +334,17 @@ function AddLessonModal({
       setLessonError('Choose a book file (PDF/EPUB) to upload.')
       return
     }
+    const hasUpload =
+      (form.content_type === 'video' && form.video_source === 'upload' && form.video_file !== null) ||
+      (form.content_type === 'book' && form.book_file !== null)
+    setUploadProgress(hasUpload ? 0 : null)
+    const onUploadProgress = hasUpload
+      ? ({ loaded, total }: AxiosProgressEvent) => {
+          if (total && total > 0) {
+            setUploadProgress(Math.min(100, Math.round((loaded * 100) / total)))
+          }
+        }
+      : undefined
     const payload = {
       section_id: modal.sectionId,
       title: form.title.trim(),
@@ -346,20 +360,34 @@ function AddLessonModal({
       book: form.content_type === 'book' ? form.book_file ?? undefined : undefined,
       duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null,
       is_free_preview: form.is_free_preview,
+      ...(onUploadProgress ? { onUploadProgress } : {}),
     }
+    const done = () => setUploadProgress(null)
     if (editing) {
       updateLesson.mutate(
         { ...payload, id: editing.id },
         {
-          onSuccess: onClose,
-          onError: (err) => setLessonError(err.message || 'Could not update lesson.'),
+          onSuccess: () => {
+            done()
+            onClose()
+          },
+          onError: (err) => {
+            done()
+            setLessonError(err.message || 'Could not update lesson.')
+          },
         },
       )
       return
     }
     createLesson.mutate(payload, {
-      onSuccess: onClose,
-      onError: (err) => setLessonError(err.message || 'Could not create lesson.'),
+      onSuccess: () => {
+        done()
+        onClose()
+      },
+      onError: (err) => {
+        done()
+        setLessonError(err.message || 'Could not create lesson.')
+      },
     })
   }
 
@@ -559,6 +587,31 @@ function AddLessonModal({
             <span className="text-sm text-text-secondary">Free preview</span>
           </label>
         </div>
+
+        {busy && uploadProgress !== null && (
+          <div aria-live="polite">
+            <div className="flex items-center justify-between text-xs text-text-secondary">
+              <span>{uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <div
+              className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-input"
+              role="progressbar"
+              aria-valuenow={uploadProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Lesson file upload progress"
+            >
+              <div
+                className="h-full rounded-full bg-blue-500 transition-all"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-text-muted">
+              Large files can take a while. Keep this window open. Uploads time out after 1 hour.
+            </p>
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-1">
           <Button type="button" variant="outline" onClick={onClose} disabled={busy}>
