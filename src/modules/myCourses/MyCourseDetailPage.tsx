@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import {
   ArrowLeft,
   Award,
@@ -36,10 +37,44 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id']
 
+/** Distinguish "not enrolled" from "not found" and network failures so a
+ * broken material link never masquerades as an enrollment problem. */
+function CourseLoadError({ status, onRetry }: { status?: number; onRetry: () => void }) {
+  const title =
+    status === 404
+      ? 'Course not found. It may have been removed.'
+      : status === 403
+        ? 'You must be enrolled to view this course.'
+        : 'Could not load this course. Check your connection and try again.'
+
+  return (
+    <div className="rounded-2xl border border-semantic-error/40 bg-semantic-error/10 p-8 text-center">
+      <p className="text-sm text-semantic-error">{title}</p>
+      <div className="mt-4 flex items-center justify-center gap-4">
+        {status !== 403 && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="text-sm font-medium text-blue-300 hover:underline"
+          >
+            Try again
+          </button>
+        )}
+        <Link
+          to={ROUTES.APP.CATALOG}
+          className="text-sm font-medium text-blue-300 hover:underline"
+        >
+          Browse courses
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 export default function MyCourseDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const courseSlug = slug ?? ''
-  const { data: course, isPending, isError } = useLearnerCourse(courseSlug)
+  const { data: course, isPending, isError, error, refetch } = useLearnerCourse(courseSlug)
   const { data: progress } = useLearnerProgress(courseSlug)
   const { data: enrollments } = useMyEnrollments()
   const enrollment = enrollments?.find((e) => e.course_slug === courseSlug || e.course_id === Number(courseSlug))
@@ -70,17 +105,10 @@ export default function MyCourseDetailPage() {
       {isPending && <AcademyLoader block />}
 
       {isError && (
-        <div className="rounded-2xl border border-semantic-error/40 bg-semantic-error/10 p-8 text-center">
-          <p className="text-sm text-semantic-error">
-            Could not load this course. You must be enrolled to view it.
-          </p>
-          <Link
-            to={ROUTES.APP.CATALOG}
-            className="mt-4 inline-block text-sm font-medium text-blue-300 hover:underline"
-          >
-            Browse courses
-          </Link>
-        </div>
+        <CourseLoadError
+          status={isAxiosError(error) ? error.response?.status : undefined}
+          onRetry={() => refetch()}
+        />
       )}
 
       {course && (

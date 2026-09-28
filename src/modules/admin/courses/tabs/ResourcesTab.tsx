@@ -6,6 +6,7 @@ import { Input } from '../../../../shared/components/inputs/Input'
 import { Modal } from '../../../../shared/components/modals/Modal'
 import { useCreateResource, useDeleteResource } from '../../../../shared/api/courses/CourseContentQueries'
 import { storageUrl } from '../../../../shared/utils/storageUrl'
+import { normalizeExternalUrl } from '../../../../shared/utils/externalUrl'
 
 const TYPE_ICON = { book: BookOpen, link: Link2, video: Video, file: File, article: FileText }
 const TYPE_LABELS: Record<string, string> = {
@@ -39,7 +40,7 @@ export function ResourcesTab({ course }: { course: CourseFull }) {
       {
         title: form.title.trim(),
         type: form.type,
-        url: isFileType ? null : form.url || null,
+        url: isFileType ? null : normalizeExternalUrl(form.url) ?? (form.url.trim() || null),
         file: form.file ?? undefined,
         description: form.description || null,
       } as never,
@@ -77,7 +78,7 @@ export function ResourcesTab({ course }: { course: CourseFull }) {
         <ul className="space-y-2">
           {resources.map((resource) => {
             const Icon = TYPE_ICON[resource.type] ?? Link2
-            const href = resource.url || storageUrl(resource.file_path)
+            const href = normalizeExternalUrl(resource.url) ?? storageUrl(resource.file_path)
             return (
               <li
                 key={resource.id}
@@ -158,12 +159,15 @@ export function ResourcesTab({ course }: { course: CourseFull }) {
               <p className="mt-1.5 text-xs text-text-muted">Max 20MB</p>
             </div>
           ) : (
-            <Input
-              label="URL"
-              value={form.url}
-              onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-              placeholder="https://..."
-            />
+            <>
+              <Input
+                label="URL"
+                value={form.url}
+                onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                placeholder="https://..."
+              />
+              <p className="-mt-2 text-xs text-text-muted">Missing https:// is added automatically.</p>
+            </>
           )}
           <Input
             label="Description (optional)"

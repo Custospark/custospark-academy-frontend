@@ -6,6 +6,7 @@ import { Button } from '../../../../shared/components/buttons/Button'
 import { Input } from '../../../../shared/components/inputs/Input'
 import { Modal } from '../../../../shared/components/modals/Modal'
 import { storageUrl } from '../../../../shared/utils/storageUrl'
+import { normalizeExternalUrl } from '../../../../shared/utils/externalUrl'
 import {
   useCreateSection,
   useDeleteSection,
@@ -319,7 +320,7 @@ function AddLessonModal({
   const previewUploadUrl = newFileUrl ?? storedVideoUrl
   const previewLinkUrl =
     form.content_type === 'video' && form.video_source === 'link' && form.video_url.trim() !== ''
-      ? form.video_url.trim()
+      ? normalizeExternalUrl(form.video_url)
       : null
 
   function handleSubmit(e: FormEvent) {
@@ -483,12 +484,15 @@ function AddLessonModal({
                 </p>
               </div>
             ) : (
-              <Input
-                label="Video URL"
-                value={form.video_url}
-                onChange={(e) => setForm((f) => ({ ...f, video_url: e.target.value }))}
-                placeholder="https://youtube.com/watch?v=..."
-              />
+              <div>
+                <Input
+                  label="Video URL"
+                  value={form.video_url}
+                  onChange={(e) => setForm((f) => ({ ...f, video_url: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+                <p className="mt-1.5 text-xs text-text-muted">Missing https:// is added automatically.</p>
+              </div>
             )}
             {(previewUploadUrl || previewLinkUrl) && (
               <div>

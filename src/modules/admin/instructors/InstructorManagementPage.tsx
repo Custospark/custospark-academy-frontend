@@ -99,8 +99,8 @@ export default function InstructorManagementPage() {
       )}
 
       {!loading && !isError && instructors && instructors.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-card">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-border-subtle bg-surface-card">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
               <tr className="border-b border-border-subtle bg-surface-section text-xs uppercase tracking-wider text-text-muted">
                 <th className="px-5 py-3 font-semibold">Instructor</th>

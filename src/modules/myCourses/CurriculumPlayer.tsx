@@ -7,6 +7,7 @@ import { useMarkLesson } from '../../shared/api/learner/LearnerCourseQueries'
 import { useToast } from '../../app/contexts/useToast'
 import { apiErrorMessage } from '../../shared/utils/apiError'
 import { storageUrl } from '../../shared/utils/storageUrl'
+import { normalizeExternalUrl } from '../../shared/utils/externalUrl'
 import { cn } from '../../shared/utils/cn'
 
 export function CurriculumPlayer({ course, courseId }: { course: LearnerCourse; courseId: string }) {
@@ -141,10 +142,10 @@ function LessonModal({
                 />
               </div>
             ) : (
-              lesson.video_url && (
+              normalizeExternalUrl(lesson.video_url) && (
                 <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
                   <iframe
-                    src={lesson.video_url}
+                    src={normalizeExternalUrl(lesson.video_url) ?? ''}
                     title={lesson.title}
                     className="h-full w-full"
                     allowFullScreen
@@ -153,10 +154,10 @@ function LessonModal({
               )
             ))}
 
-          {lesson.content_type === 'embed' && lesson.video_url && (
+          {normalizeExternalUrl(lesson.video_url) && lesson.content_type === 'embed' && (
             <div className="aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-black">
               <iframe
-                src={lesson.video_url}
+                src={normalizeExternalUrl(lesson.video_url) ?? ''}
                 title={lesson.title}
                 className="h-full w-full"
                 allowFullScreen

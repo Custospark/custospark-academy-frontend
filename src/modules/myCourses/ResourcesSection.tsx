@@ -1,6 +1,7 @@
 import { BookOpen, Download, File, FileText, Link2, Video } from 'lucide-react'
 import type { LearnerCourse, LearnerResource } from '../../shared/types/learnerCourse'
 import { storageUrl } from '../../shared/utils/storageUrl'
+import { normalizeExternalUrl } from '../../shared/utils/externalUrl'
 
 const TYPE_ICON = { book: BookOpen, link: Link2, video: Video, file: File, article: FileText }
 const TYPE_LABELS: Record<string, string> = {
@@ -35,7 +36,8 @@ export function ResourcesSection({ course }: { course: LearnerCourse }) {
 function ResourceRow({ resource }: { resource: LearnerResource }) {
   const Icon = TYPE_ICON[resource.type as keyof typeof TYPE_ICON] ?? Link2
   // Uploaded files live on the API domain's public disk - never relative.
-  const href = resource.url || storageUrl(resource.file_path)
+  // Older link rows may lack https:// - normalize at render so they open.
+  const href = normalizeExternalUrl(resource.url) ?? storageUrl(resource.file_path)
   const isFile = !resource.url && !!resource.file_path
 
   return (
