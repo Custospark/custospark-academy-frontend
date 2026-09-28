@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -80,7 +81,7 @@ export default function CourseDetailPage() {
   const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated)
   const [applyOpen, setApplyOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const { data: course, isPending, isError, refetch } = useCourse(slug ?? '')
+  const { data: course, isPending, isError, error, refetch } = useCourse(slug ?? '')
 
   // Keep the loader visible until we actually have data (not just until the
   // query transitions out of its initial pending state). This prevents the
@@ -94,20 +95,31 @@ export default function CourseDetailPage() {
   }
 
   if (isError || !course) {
+    const status = isAxiosError(error) ? error.response?.status : undefined
+    const gone = status === 404
     return (
       <div className="min-h-[60vh] bg-surface-page px-6 py-24">
         <div className="mx-auto max-w-md rounded-2xl border border-semantic-error/40 bg-semantic-error/10 p-8 text-center">
           <GraduationCap className="mx-auto h-12 w-12 text-semantic-error" />
           <h1 className="mt-4 text-xl font-bold text-white">Course not found</h1>
           <p className="mt-2 text-sm text-text-secondary">
-            This course may have been removed or is no longer available.
+            {gone
+              ? 'This course may have been removed or is no longer available.'
+              : 'Could not load this course. Check your connection and try again.'}
           </p>
-          <Link to={isAuthenticated ? ROUTES.APP.CATALOG : ROUTES.COURSES}>
-            <Button variant="outline" size="md" className="mt-6">
-              <ArrowLeft className="h-4 w-4" />
-              Back to courses
-            </Button>
-          </Link>
+          <div className="mt-6 flex items-center justify-center gap-4">
+            {!gone && (
+              <Button variant="outline" size="md" onClick={() => refetch()}>
+                Try again
+              </Button>
+            )}
+            <Link to={isAuthenticated ? ROUTES.APP.CATALOG : ROUTES.COURSES}>
+              <Button variant="outline" size="md">
+                <ArrowLeft className="h-4 w-4" />
+                Back to courses
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     )
