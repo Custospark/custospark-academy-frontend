@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ClipboardList,
   FileQuestion,
+  Lock,
   NotebookPen,
   Target,
 } from 'lucide-react'
@@ -18,6 +19,7 @@ import {
   useMyEnrollments,
 } from '../../shared/api/learner/LearnerCourseQueries'
 import { AcademyLoader } from '../../shared/components/loading/AcademyLoader'
+import { EnrollmentActionButton } from '../../shared/components/buttons/EnrollmentActionButton'
 import { cn } from '../../shared/utils/cn'
 import { ROUTES } from '../../app/routes/constants/shared.paths'
 import { CurriculumPlayer } from './CurriculumPlayer'
@@ -76,7 +78,7 @@ export default function MyCourseDetailPage() {
   const courseSlug = slug ?? ''
   const { data: course, isPending, isError, error, refetch } = useLearnerCourse(courseSlug)
   const { data: progress } = useLearnerProgress(courseSlug)
-  const { data: enrollments } = useMyEnrollments()
+  const { data: enrollments, refetch: refetchEnrollments } = useMyEnrollments()
   const enrollment = enrollments?.find((e) => e.course_slug === courseSlug || e.course_id === Number(courseSlug))
   const [activeTab, setActiveTab] = useState<TabId>('curriculum')
 
@@ -163,33 +165,66 @@ export default function MyCourseDetailPage() {
           )}
 
           {/* Tabs */}
-          <div className="mb-6 flex flex-wrap gap-2 border-b border-border-subtle pb-3">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors',
-                  activeTab === tab.id
-                    ? 'bg-blue-500/15 text-blue-300'
-                    : 'text-text-secondary hover:bg-surface-card hover:text-white',
-                )}
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {activeTab === 'curriculum' && <CurriculumPlayer course={course} courseId={courseSlug} />}
-          {activeTab === 'resources' && <ResourcesSection course={course} />}
-          {activeTab === 'assessments' && <AssessmentsSection course={course} courseId={courseSlug} />}
-          {activeTab === 'assignments' && <AssignmentsSection course={course} courseId={courseSlug} />}
-          {activeTab === 'performance' && (
+          {course.materials_locked ? (
+            <div className="mb-6 rounded-2xl border border-academy-amber/40 bg-academy-amber/10 p-8 text-center">
+              <Lock className="mx-auto h-10 w-10 text-academy-amber" />
+              <h3 className="mt-3 font-display text-lg font-bold text-white">
+                Trial study period ended
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
+                You studied free while arranging payment. Pay the application fee
+                to unlock your lessons, resources and assessments again.
+              </p>
+              {enrollment && (
+                <div className="mt-5 flex justify-center">
+                  <EnrollmentActionButton
+                    courseId={course.id}
+                    courseSlug={courseSlug}
+                    courseTitle={course.title}
+                    enrollmentId={enrollment.id}
+                    status={enrollment.status}
+                    fees={enrollment.fees}
+                    window={{ opens_at: enrollment.enrollment_opens_at, closes_at: enrollment.enrollment_closes_at }}
+                    size="md"
+                    onChanged={() => {
+                      refetch()
+                      refetchEnrollments()
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
             <>
-              <MyAttendanceBlock courseSlug={courseSlug} />
-              <PerformanceSection course={course} />
+              <div className="mb-6 flex flex-wrap gap-2 border-b border-border-subtle pb-3">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      'inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors',
+                      activeTab === tab.id
+                        ? 'bg-blue-500/15 text-blue-300'
+                        : 'text-text-secondary hover:bg-surface-card hover:text-white',
+                    )}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {activeTab === 'curriculum' && <CurriculumPlayer course={course} courseId={courseSlug} />}
+              {activeTab === 'resources' && <ResourcesSection course={course} />}
+              {activeTab === 'assessments' && <AssessmentsSection course={course} courseId={courseSlug} />}
+              {activeTab === 'assignments' && <AssignmentsSection course={course} courseId={courseSlug} />}
+              {activeTab === 'performance' && (
+                <>
+                  <MyAttendanceBlock courseSlug={courseSlug} />
+                  <PerformanceSection course={course} />
+                </>
+              )}
             </>
           )}
         </>

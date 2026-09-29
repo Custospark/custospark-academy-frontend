@@ -125,4 +125,8 @@ export interface LearnerCourse {
   exercises: LearnerExercise[]
   exams: LearnerExam[]
   assignments: LearnerAssignment[]
+  /** True when the study grace window lapsed with the fee still unpaid. */
+  materials_locked: boolean
+  /** End of the study-while-you-pay window (null when never lockable). */
+  materials_grace_until: string | null
 }
