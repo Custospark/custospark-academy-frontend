@@ -23,9 +23,9 @@ vi.mock('../../../shared/components/buttons/EnrollmentActionButton', () => ({
   EnrollmentActionButton: () => <button type="button">Pay application fee</button>,
 }))
 
-const courseQuery = vi.hoisted(() => ({ current: { data: undefined as unknown } }))
-const progressQuery = vi.hoisted(() => ({ current: { data: undefined as unknown } }))
-const enrollmentsQuery = vi.hoisted(() => ({ current: { data: undefined as unknown } }))
+const courseQuery = vi.hoisted(() => ({ current: {} as Record<string, unknown> }))
+const progressQuery = vi.hoisted(() => ({ current: {} as Record<string, unknown> }))
+const enrollmentsQuery = vi.hoisted(() => ({ current: {} as Record<string, unknown> }))
 
 vi.mock('../../../shared/api/learner/LearnerCourseQueries', () => ({
   useLearnerCourse: () => courseQuery.current,
